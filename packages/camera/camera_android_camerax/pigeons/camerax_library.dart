@@ -1318,3 +1318,65 @@ abstract class DisplayOrientedMeteringPointFactory
     double height,
   );
 }
+
+/// The extension modes supported by CameraX vendor extensions.
+///
+/// See https://developer.android.com/reference/androidx/camera/extensions/ExtensionMode.
+enum CameraXExtensionMode {
+  /// No extension mode is applied.
+  ///
+  /// See https://developer.android.com/reference/androidx/camera/extensions/ExtensionMode#NONE().
+  none,
+
+  /// Automatically selects the best extension mode for the scene.
+  ///
+  /// See https://developer.android.com/reference/androidx/camera/extensions/ExtensionMode#AUTO().
+  auto,
+
+  /// Applies a bokeh (portrait) effect, blurring the background.
+  ///
+  /// See https://developer.android.com/reference/androidx/camera/extensions/ExtensionMode#BOKEH().
+  bokeh,
+
+  /// Applies HDR (High Dynamic Range) processing.
+  ///
+  /// See https://developer.android.com/reference/androidx/camera/extensions/ExtensionMode#HDR().
+  hdr,
+
+  /// Applies night mode processing for low-light conditions.
+  ///
+  /// See https://developer.android.com/reference/androidx/camera/extensions/ExtensionMode#NIGHT().
+  night,
+
+  /// Applies face retouch processing.
+  ///
+  /// See https://developer.android.com/reference/androidx/camera/extensions/ExtensionMode#FACE_RETOUCH().
+  faceRetouch,
+}
+
+/// Provides interfaces for third-party camera extension support.
+///
+/// See https://developer.android.com/reference/androidx/camera/extensions/ExtensionsManager.
+@ProxyApi(
+  kotlinOptions: KotlinProxyApiOptions(
+    fullClassName: 'androidx.camera.extensions.ExtensionsManager',
+  ),
+)
+abstract class ExtensionsManager {
+  /// Retrieves the ExtensionsManager associated with the current process.
+  @async
+  @static
+  ExtensionsManager getInstance(ProcessCameraProvider provider);
+
+  /// Returns whether the given extension mode is available for a camera.
+  bool isExtensionAvailable(
+    CameraSelector cameraSelector,
+    CameraXExtensionMode mode,
+  );
+
+  /// Returns a CameraSelector with the extension mode applied.
+  CameraSelector getExtensionEnabledCameraSelector(
+    CameraSelector cameraSelector,
+    CameraXExtensionMode mode,
+  );
+}

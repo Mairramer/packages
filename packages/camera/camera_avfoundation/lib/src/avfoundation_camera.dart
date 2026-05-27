@@ -443,6 +443,44 @@ class AVFoundationCamera extends CameraPlatform {
   }
 
   @override
+  Future<List<CameraEffectState>> getCameraEffects(int cameraId) async {
+    final List<PlatformCameraEffectState?> states = await _hostApi
+        .getCameraEffects();
+    return states
+        .whereType<PlatformCameraEffectState>()
+        .map(cameraEffectStateFromPlatformData)
+        .toList();
+  }
+
+  @override
+  Future<void> setCameraEffectActive(
+    int cameraId,
+    CameraEffectType type,
+    bool active,
+  ) async {
+    throw PlatformException(
+      code: 'unsupported',
+      message:
+          'iOS manages video effects globally. Use showSystemEffectsUI() to let the user configure effects.',
+    );
+  }
+
+  @override
+  Stream<CameraEffectState> onCameraEffectsChanged(int cameraId) {
+    return hostCameraHandlers[cameraId]!.effectStreamController.stream;
+  }
+
+  @override
+  Future<void> showSystemEffectsUI(int cameraId) async {
+    await _hostApi.showSystemEffectsUI();
+  }
+
+  @override
+  Future<void> triggerReaction(int cameraId, String reactionType) async {
+    await _hostApi.triggerReaction(reactionType);
+  }
+
+  @override
   Widget buildPreview(int cameraId) {
     return Texture(textureId: cameraId);
   }
@@ -673,5 +711,15 @@ class HostCameraMessageHandler implements CameraEventApi {
         initialState.focusPointSupported,
       ),
     );
+  }
+
+  /// The controller used to broadcast camera effect events coming from the
+  /// host platform.
+  final StreamController<CameraEffectState> effectStreamController =
+      StreamController<CameraEffectState>.broadcast();
+
+  @override
+  void effectChanged(PlatformCameraEffectState state) {
+    effectStreamController.add(cameraEffectStateFromPlatformData(state));
   }
 }

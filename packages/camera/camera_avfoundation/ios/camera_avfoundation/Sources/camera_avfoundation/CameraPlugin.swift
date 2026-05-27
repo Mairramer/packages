@@ -555,4 +555,32 @@ extension CameraPlugin: CameraApi {
       completion(.success(()))
     }
   }
+
+  func getCameraEffects(
+    completion: @escaping (Result<[PlatformCameraEffectState], any Error>) -> Void
+  ) {
+    captureSessionQueue.async { [weak self] in
+      if let camera = self?.camera {
+        completion(.success(camera.getCameraEffects()))
+      } else {
+        completion(.success([]))
+      }
+    }
+  }
+
+  func showSystemEffectsUI(completion: @escaping (Result<Void, any Error>) -> Void) {
+    captureSessionQueue.async { [weak self] in
+      self?.camera?.showSystemEffectsUI()
+      completion(.success(()))
+    }
+  }
+
+  func triggerReaction(
+    reactionType: String, completion: @escaping (Result<Void, any Error>) -> Void
+  ) {
+    captureSessionQueue.async { [weak self] in
+      self?.camera?.triggerReaction(reactionType: reactionType)
+      completion(.success(()))
+    }
+  }
 }

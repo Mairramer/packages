@@ -187,6 +187,32 @@ class PlatformSize {
   final double height;
 }
 
+// Pigeon version of CameraEffectType.
+enum PlatformCameraEffectType {
+  portraitBlur,
+  faceRetouch,
+  hdr,
+  night,
+  centerStage,
+  studioLight,
+  reactions,
+}
+
+// Pigeon version of CameraEffectState.
+class PlatformCameraEffectState {
+  PlatformCameraEffectState({
+    required this.type,
+    required this.isSupported,
+    required this.isActive,
+    required this.isSystemManaged,
+  });
+
+  final PlatformCameraEffectType type;
+  final bool isSupported;
+  final bool isActive;
+  final bool isSystemManaged;
+}
+
 @HostApi()
 abstract class CameraApi {
   /// Returns the list of available cameras.
@@ -349,6 +375,21 @@ abstract class CameraApi {
   @async
   @ObjCSelector('setImageFileFormat:')
   void setImageFileFormat(PlatformImageFileFormat format);
+
+  /// Gets the list of supported camera effects and their states.
+  @async
+  @ObjCSelector('getCameraEffects')
+  List<PlatformCameraEffectState> getCameraEffects();
+
+  /// Shows the system UI for video effects.
+  @async
+  @ObjCSelector('showSystemEffectsUI')
+  void showSystemEffectsUI();
+
+  /// Triggers a specific animation reaction.
+  @async
+  @ObjCSelector('triggerReaction:')
+  void triggerReaction(String reactionType);
 }
 
 @EventChannelApi()
@@ -378,4 +419,8 @@ abstract class CameraEventApi {
   /// handling a specific HostApi call, such as during streaming.
   @ObjCSelector('reportError:')
   void error(String message);
+
+  /// Called when a camera effect state changes.
+  @ObjCSelector('effectChangedWithState:')
+  void effectChanged(PlatformCameraEffectState state);
 }

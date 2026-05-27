@@ -1462,6 +1462,76 @@ final class DefaultCamera: NSObject, Camera {
     }
   }
 
+  func getCameraEffects() -> [PlatformCameraEffectState] {
+    var effects: [PlatformCameraEffectState] = []
+
+    // Note: iOS 15.0+ for portrait
+    if #available(iOS 15.0, *) {
+      effects.append(
+        PlatformCameraEffectState(
+          type: .portraitBlur,
+          isSupported: captureDevice.flutterActiveFormat.flutterIsPortraitEffectSupported,
+          isActive: AVCaptureDevice.isPortraitEffectEnabled,
+          isSystemManaged: true
+        ))
+    }
+
+    if #available(iOS 14.5, *) {
+      effects.append(
+        PlatformCameraEffectState(
+          type: .centerStage,
+          isSupported: captureDevice.flutterActiveFormat.flutterIsCenterStageSupported,
+          isActive: AVCaptureDevice.isCenterStageEnabled,
+          isSystemManaged: true
+        ))
+    }
+
+    if #available(iOS 16.0, *) {
+      effects.append(
+        PlatformCameraEffectState(
+          type: .studioLight,
+          isSupported: captureDevice.flutterActiveFormat.flutterIsStudioLightSupported,
+          isActive: AVCaptureDevice.isStudioLightEnabled,
+          isSystemManaged: true
+        ))
+    }
+
+    #if compiler(>=5.9)
+      if #available(iOS 17.0, *) {
+        effects.append(
+          PlatformCameraEffectState(
+            type: .reactions,
+            isSupported: captureDevice.flutterActiveFormat.flutterReactionEffectsSupported,
+            isActive: AVCaptureDevice.reactionEffectsEnabled,
+            isSystemManaged: true
+          ))
+      }
+    #endif
+
+    return effects
+  }
+
+  func showSystemEffectsUI() {
+    #if compiler(>=5.9)
+      if #available(iOS 17.0, *) {
+        DispatchQueue.main.async {
+          AVCaptureDevice.showSystemUserInterface(.videoEffects)
+        }
+      }
+    #endif
+  }
+
+  func triggerReaction(reactionType: String) {
+    #if compiler(>=5.9)
+      if #available(iOS 17.0, *) {
+        let reaction = AVCaptureReactionType(rawValue: reactionType)
+        if captureDevice.avDevice.canPerformReactionEffects {
+          captureDevice.avDevice.performEffect(for: reaction)
+        }
+      }
+    #endif
+  }
+
   func close() {
     stop()
     for input in videoCaptureSession.inputs {

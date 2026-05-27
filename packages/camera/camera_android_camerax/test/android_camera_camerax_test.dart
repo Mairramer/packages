@@ -37,6 +37,7 @@ import 'android_camera_camerax_test.mocks.dart';
   MockSpec<FocusMeteringActionBuilder>(),
   MockSpec<FocusMeteringResult>(),
   MockSpec<ImageAnalysis>(),
+  MockSpec<ExtensionsManager>(),
   MockSpec<ImageCapture>(),
   MockSpec<ImageProxy>(),
   MockSpec<Observer<CameraState>>(),
@@ -6579,6 +6580,177 @@ void main() {
       verifyNoMoreInteractions(camera.camera);
     },
   );
+
+  group('Camera Effects Tests', () {
+    test(
+      'getCameraEffects returns empty list if cameraSelector is null',
+      () async {
+        final camera = AndroidCameraCameraX();
+        expect(await camera.getCameraEffects(1), isEmpty);
+      },
+    );
+
+    test('getCameraEffects returns correct supported states', () async {
+      final camera = AndroidCameraCameraX();
+      final mockExtensionsManager = MockExtensionsManager();
+      final mockCameraSelector = MockCameraSelector();
+      final mockProcessCameraProvider = MockProcessCameraProvider();
+      camera.cameraSelector = mockCameraSelector;
+      camera.processCameraProvider = mockProcessCameraProvider;
+
+      PigeonOverrides.extensionsManager_getInstance = (provider) async =>
+          mockExtensionsManager;
+
+      when(
+        mockExtensionsManager.isExtensionAvailable(
+          mockCameraSelector,
+          CameraXExtensionMode.bokeh,
+        ),
+      ).thenAnswer((_) async => true);
+      when(
+        mockExtensionsManager.isExtensionAvailable(
+          mockCameraSelector,
+          CameraXExtensionMode.hdr,
+        ),
+      ).thenAnswer((_) async => false);
+      when(
+        mockExtensionsManager.isExtensionAvailable(
+          mockCameraSelector,
+          CameraXExtensionMode.night,
+        ),
+      ).thenAnswer((_) async => true);
+      when(
+        mockExtensionsManager.isExtensionAvailable(
+          mockCameraSelector,
+          CameraXExtensionMode.faceRetouch,
+        ),
+      ).thenAnswer((_) async => false);
+
+      final List<CameraEffectState> states = await camera.getCameraEffects(1);
+
+      expect(states.length, equals(7));
+
+      final CameraEffectState bokehState = states.firstWhere(
+        (s) => s.type == CameraEffectType.portraitBlur,
+      );
+      expect(bokehState.isSupported, isTrue);
+      expect(bokehState.isActive, isFalse);
+      expect(bokehState.isSystemManaged, isFalse);
+
+      final CameraEffectState hdrState = states.firstWhere(
+        (s) => s.type == CameraEffectType.hdr,
+      );
+      expect(hdrState.isSupported, isFalse);
+      expect(hdrState.isActive, isFalse);
+      expect(hdrState.isSystemManaged, isFalse);
+
+      final CameraEffectState nightState = states.firstWhere(
+        (s) => s.type == CameraEffectType.night,
+      );
+      expect(nightState.isSupported, isTrue);
+
+      final CameraEffectState centerStageState = states.firstWhere(
+        (s) => s.type == CameraEffectType.centerStage,
+      );
+      expect(centerStageState.isSupported, isFalse);
+      expect(centerStageState.isSystemManaged, isTrue);
+    });
+
+    test(
+      'setCameraEffectActive throws exception for unsupported effects',
+      () async {
+        final camera = AndroidCameraCameraX();
+        final mockCameraSelector = MockCameraSelector();
+        camera.cameraSelector = mockCameraSelector;
+
+        expect(
+          () => camera.setCameraEffectActive(
+            1,
+            CameraEffectType.centerStage,
+            true,
+          ),
+          throwsA(isA<PlatformException>()),
+        );
+      },
+    );
+
+    test(
+      'setCameraEffectActive successfully sets camera effect active and rebinds use cases',
+      () async {
+        final camera = AndroidCameraCameraX();
+        final mockExtensionsManager = MockExtensionsManager();
+        final mockCameraSelector = MockCameraSelector();
+        final mockEnabledCameraSelector = MockCameraSelector();
+        final mockProcessCameraProvider = MockProcessCameraProvider();
+        final mockPreview = MockPreview();
+        final mockCamera = MockCamera();
+        final mockCameraInfo = MockCameraInfo();
+        final mockLiveCameraState = MockLiveCameraState();
+
+        camera.cameraSelector = mockCameraSelector;
+        camera.processCameraProvider = mockProcessCameraProvider;
+        camera.preview = mockPreview;
+
+        PigeonOverrides.extensionsManager_getInstance = (provider) async =>
+            mockExtensionsManager;
+
+        when(
+          mockExtensionsManager.isExtensionAvailable(
+            mockCameraSelector,
+            CameraXExtensionMode.bokeh,
+          ),
+        ).thenAnswer((_) async => true);
+        when(
+          mockExtensionsManager.getExtensionEnabledCameraSelector(
+            mockCameraSelector,
+            CameraXExtensionMode.bokeh,
+          ),
+        ).thenAnswer((_) async => mockEnabledCameraSelector);
+
+        when(
+          mockProcessCameraProvider.isBound(mockPreview),
+        ).thenAnswer((_) async => true);
+        when(
+          mockProcessCameraProvider.bindToLifecycle(
+            mockEnabledCameraSelector,
+            <UseCase>[mockPreview],
+          ),
+        ).thenAnswer((_) async => mockCamera);
+        when(
+          mockCamera.getCameraInfo(),
+        ).thenAnswer((_) async => mockCameraInfo);
+        when(
+          mockCameraInfo.getCameraState(),
+        ).thenAnswer((_) async => mockLiveCameraState);
+
+        final Stream<CameraEffectState> stream = camera.onCameraEffectsChanged(
+          1,
+        );
+        final queue = StreamQueue<CameraEffectState>(stream);
+
+        await camera.setCameraEffectActive(
+          1,
+          CameraEffectType.portraitBlur,
+          true,
+        );
+
+        verify(mockProcessCameraProvider.unbindAll()).called(1);
+        verify(
+          mockProcessCameraProvider.bindToLifecycle(
+            mockEnabledCameraSelector,
+            <UseCase>[mockPreview],
+          ),
+        ).called(1);
+
+        final CameraEffectState event = await queue.next;
+        expect(event.type, equals(CameraEffectType.portraitBlur));
+        expect(event.isActive, isTrue);
+        expect(event.isSupported, isTrue);
+
+        await queue.cancel();
+      },
+    );
+  });
 }
 
 class TestMeteringPoint extends MeteringPoint {

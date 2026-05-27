@@ -170,95 +170,101 @@ class _FakeImageAnalysis_24 extends _i1.SmartFake implements _i2.ImageAnalysis {
     : super(parent, parentInvocation);
 }
 
-class _FakeImageCapture_25 extends _i1.SmartFake implements _i2.ImageCapture {
-  _FakeImageCapture_25(Object parent, Invocation parentInvocation)
+class _FakeExtensionsManager_25 extends _i1.SmartFake
+    implements _i2.ExtensionsManager {
+  _FakeExtensionsManager_25(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeImageProxy_26 extends _i1.SmartFake implements _i2.ImageProxy {
-  _FakeImageProxy_26(Object parent, Invocation parentInvocation)
+class _FakeImageCapture_26 extends _i1.SmartFake implements _i2.ImageCapture {
+  _FakeImageCapture_26(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeObserver_27<T> extends _i1.SmartFake implements _i3.Observer<T> {
-  _FakeObserver_27(Object parent, Invocation parentInvocation)
+class _FakeImageProxy_27 extends _i1.SmartFake implements _i2.ImageProxy {
+  _FakeImageProxy_27(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakePendingRecording_28 extends _i1.SmartFake
+class _FakeObserver_28<T> extends _i1.SmartFake implements _i3.Observer<T> {
+  _FakeObserver_28(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakePendingRecording_29 extends _i1.SmartFake
     implements _i2.PendingRecording {
-  _FakePendingRecording_28(Object parent, Invocation parentInvocation)
+  _FakePendingRecording_29(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeRecording_29 extends _i1.SmartFake implements _i2.Recording {
-  _FakeRecording_29(Object parent, Invocation parentInvocation)
+class _FakeRecording_30 extends _i1.SmartFake implements _i2.Recording {
+  _FakeRecording_30(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakePlaneProxy_30 extends _i1.SmartFake implements _i2.PlaneProxy {
-  _FakePlaneProxy_30(Object parent, Invocation parentInvocation)
+class _FakePlaneProxy_31 extends _i1.SmartFake implements _i2.PlaneProxy {
+  _FakePlaneProxy_31(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakePreview_31 extends _i1.SmartFake implements _i2.Preview {
-  _FakePreview_31(Object parent, Invocation parentInvocation)
+class _FakePreview_32 extends _i1.SmartFake implements _i2.Preview {
+  _FakePreview_32(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeProcessCameraProvider_32 extends _i1.SmartFake
+class _FakeProcessCameraProvider_33 extends _i1.SmartFake
     implements _i2.ProcessCameraProvider {
-  _FakeProcessCameraProvider_32(Object parent, Invocation parentInvocation)
+  _FakeProcessCameraProvider_33(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeQualitySelector_33 extends _i1.SmartFake
+class _FakeQualitySelector_34 extends _i1.SmartFake
     implements _i2.QualitySelector {
-  _FakeQualitySelector_33(Object parent, Invocation parentInvocation)
+  _FakeQualitySelector_34(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeRecorder_34 extends _i1.SmartFake implements _i2.Recorder {
-  _FakeRecorder_34(Object parent, Invocation parentInvocation)
+class _FakeRecorder_35 extends _i1.SmartFake implements _i2.Recorder {
+  _FakeRecorder_35(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeResolutionFilter_35 extends _i1.SmartFake
+class _FakeResolutionFilter_36 extends _i1.SmartFake
     implements _i2.ResolutionFilter {
-  _FakeResolutionFilter_35(Object parent, Invocation parentInvocation)
+  _FakeResolutionFilter_36(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeResolutionSelector_36 extends _i1.SmartFake
+class _FakeResolutionSelector_37 extends _i1.SmartFake
     implements _i2.ResolutionSelector {
-  _FakeResolutionSelector_36(Object parent, Invocation parentInvocation)
+  _FakeResolutionSelector_37(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeResolutionStrategy_37 extends _i1.SmartFake
+class _FakeResolutionStrategy_38 extends _i1.SmartFake
     implements _i2.ResolutionStrategy {
-  _FakeResolutionStrategy_37(Object parent, Invocation parentInvocation)
+  _FakeResolutionStrategy_38(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeSystemServicesManager_38 extends _i1.SmartFake
+class _FakeSystemServicesManager_39 extends _i1.SmartFake
     implements _i2.SystemServicesManager {
-  _FakeSystemServicesManager_38(Object parent, Invocation parentInvocation)
+  _FakeSystemServicesManager_39(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeVideoOutput_39 extends _i1.SmartFake implements _i2.VideoOutput {
-  _FakeVideoOutput_39(Object parent, Invocation parentInvocation)
+class _FakeVideoOutput_40 extends _i1.SmartFake implements _i2.VideoOutput {
+  _FakeVideoOutput_40(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeVideoCapture_40 extends _i1.SmartFake implements _i2.VideoCapture {
-  _FakeVideoCapture_40(Object parent, Invocation parentInvocation)
+class _FakeVideoCapture_41 extends _i1.SmartFake implements _i2.VideoCapture {
+  _FakeVideoCapture_41(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeZoomState_41 extends _i1.SmartFake implements _i2.ZoomState {
-  _FakeZoomState_41(Object parent, Invocation parentInvocation)
+class _FakeZoomState_42 extends _i1.SmartFake implements _i2.ZoomState {
+  _FakeZoomState_42(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
@@ -1424,6 +1430,84 @@ class MockImageAnalysis extends _i1.Mock implements _i2.ImageAnalysis {
           as _i2.ImageAnalysis);
 }
 
+/// A class which mocks [ExtensionsManager].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockExtensionsManager extends _i1.Mock implements _i2.ExtensionsManager {
+  @override
+  _i2.PigeonInstanceManager get pigeon_instanceManager =>
+      (super.noSuchMethod(
+            Invocation.getter(#pigeon_instanceManager),
+            returnValue: _FakePigeonInstanceManager_0(
+              this,
+              Invocation.getter(#pigeon_instanceManager),
+            ),
+            returnValueForMissingStub: _FakePigeonInstanceManager_0(
+              this,
+              Invocation.getter(#pigeon_instanceManager),
+            ),
+          )
+          as _i2.PigeonInstanceManager);
+
+  @override
+  _i5.Future<bool> isExtensionAvailable(
+    _i2.CameraSelector? cameraSelector,
+    _i2.CameraXExtensionMode? mode,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#isExtensionAvailable, [cameraSelector, mode]),
+            returnValue: _i5.Future<bool>.value(false),
+            returnValueForMissingStub: _i5.Future<bool>.value(false),
+          )
+          as _i5.Future<bool>);
+
+  @override
+  _i5.Future<_i2.CameraSelector> getExtensionEnabledCameraSelector(
+    _i2.CameraSelector? cameraSelector,
+    _i2.CameraXExtensionMode? mode,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#getExtensionEnabledCameraSelector, [
+              cameraSelector,
+              mode,
+            ]),
+            returnValue: _i5.Future<_i2.CameraSelector>.value(
+              _FakeCameraSelector_14(
+                this,
+                Invocation.method(#getExtensionEnabledCameraSelector, [
+                  cameraSelector,
+                  mode,
+                ]),
+              ),
+            ),
+            returnValueForMissingStub: _i5.Future<_i2.CameraSelector>.value(
+              _FakeCameraSelector_14(
+                this,
+                Invocation.method(#getExtensionEnabledCameraSelector, [
+                  cameraSelector,
+                  mode,
+                ]),
+              ),
+            ),
+          )
+          as _i5.Future<_i2.CameraSelector>);
+
+  @override
+  _i2.ExtensionsManager pigeon_copy() =>
+      (super.noSuchMethod(
+            Invocation.method(#pigeon_copy, []),
+            returnValue: _FakeExtensionsManager_25(
+              this,
+              Invocation.method(#pigeon_copy, []),
+            ),
+            returnValueForMissingStub: _FakeExtensionsManager_25(
+              this,
+              Invocation.method(#pigeon_copy, []),
+            ),
+          )
+          as _i2.ExtensionsManager);
+}
+
 /// A class which mocks [ImageCapture].
 ///
 /// See the documentation for Mockito's code generation for more information.
@@ -1486,11 +1570,11 @@ class MockImageCapture extends _i1.Mock implements _i2.ImageCapture {
   _i2.ImageCapture pigeon_copy() =>
       (super.noSuchMethod(
             Invocation.method(#pigeon_copy, []),
-            returnValue: _FakeImageCapture_25(
+            returnValue: _FakeImageCapture_26(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
-            returnValueForMissingStub: _FakeImageCapture_25(
+            returnValueForMissingStub: _FakeImageCapture_26(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
@@ -1570,11 +1654,11 @@ class MockImageProxy extends _i1.Mock implements _i2.ImageProxy {
   _i2.ImageProxy pigeon_copy() =>
       (super.noSuchMethod(
             Invocation.method(#pigeon_copy, []),
-            returnValue: _FakeImageProxy_26(
+            returnValue: _FakeImageProxy_27(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
-            returnValueForMissingStub: _FakeImageProxy_26(
+            returnValueForMissingStub: _FakeImageProxy_27(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
@@ -1615,11 +1699,11 @@ class MockObserver extends _i1.Mock implements _i3.Observer<_i2.CameraState> {
   _i3.Observer<_i2.CameraState> pigeon_copy() =>
       (super.noSuchMethod(
             Invocation.method(#pigeon_copy, []),
-            returnValue: _FakeObserver_27<_i2.CameraState>(
+            returnValue: _FakeObserver_28<_i2.CameraState>(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
-            returnValueForMissingStub: _FakeObserver_27<_i2.CameraState>(
+            returnValueForMissingStub: _FakeObserver_28<_i2.CameraState>(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
@@ -1651,13 +1735,13 @@ class MockPendingRecording extends _i1.Mock implements _i2.PendingRecording {
       (super.noSuchMethod(
             Invocation.method(#withAudioEnabled, [initialMuted]),
             returnValue: _i5.Future<_i2.PendingRecording>.value(
-              _FakePendingRecording_28(
+              _FakePendingRecording_29(
                 this,
                 Invocation.method(#withAudioEnabled, [initialMuted]),
               ),
             ),
             returnValueForMissingStub: _i5.Future<_i2.PendingRecording>.value(
-              _FakePendingRecording_28(
+              _FakePendingRecording_29(
                 this,
                 Invocation.method(#withAudioEnabled, [initialMuted]),
               ),
@@ -1670,13 +1754,13 @@ class MockPendingRecording extends _i1.Mock implements _i2.PendingRecording {
       (super.noSuchMethod(
             Invocation.method(#asPersistentRecording, []),
             returnValue: _i5.Future<_i2.PendingRecording>.value(
-              _FakePendingRecording_28(
+              _FakePendingRecording_29(
                 this,
                 Invocation.method(#asPersistentRecording, []),
               ),
             ),
             returnValueForMissingStub: _i5.Future<_i2.PendingRecording>.value(
-              _FakePendingRecording_28(
+              _FakePendingRecording_29(
                 this,
                 Invocation.method(#asPersistentRecording, []),
               ),
@@ -1689,10 +1773,10 @@ class MockPendingRecording extends _i1.Mock implements _i2.PendingRecording {
       (super.noSuchMethod(
             Invocation.method(#start, [listener]),
             returnValue: _i5.Future<_i2.Recording>.value(
-              _FakeRecording_29(this, Invocation.method(#start, [listener])),
+              _FakeRecording_30(this, Invocation.method(#start, [listener])),
             ),
             returnValueForMissingStub: _i5.Future<_i2.Recording>.value(
-              _FakeRecording_29(this, Invocation.method(#start, [listener])),
+              _FakeRecording_30(this, Invocation.method(#start, [listener])),
             ),
           )
           as _i5.Future<_i2.Recording>);
@@ -1701,11 +1785,11 @@ class MockPendingRecording extends _i1.Mock implements _i2.PendingRecording {
   _i2.PendingRecording pigeon_copy() =>
       (super.noSuchMethod(
             Invocation.method(#pigeon_copy, []),
-            returnValue: _FakePendingRecording_28(
+            returnValue: _FakePendingRecording_29(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
-            returnValueForMissingStub: _FakePendingRecording_28(
+            returnValueForMissingStub: _FakePendingRecording_29(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
@@ -1763,11 +1847,11 @@ class MockPlaneProxy extends _i1.Mock implements _i2.PlaneProxy {
   _i2.PlaneProxy pigeon_copy() =>
       (super.noSuchMethod(
             Invocation.method(#pigeon_copy, []),
-            returnValue: _FakePlaneProxy_30(
+            returnValue: _FakePlaneProxy_31(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
-            returnValueForMissingStub: _FakePlaneProxy_30(
+            returnValueForMissingStub: _FakePlaneProxy_31(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
@@ -1845,11 +1929,11 @@ class MockPreview extends _i1.Mock implements _i2.Preview {
   _i2.Preview pigeon_copy() =>
       (super.noSuchMethod(
             Invocation.method(#pigeon_copy, []),
-            returnValue: _FakePreview_31(
+            returnValue: _FakePreview_32(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
-            returnValueForMissingStub: _FakePreview_31(
+            returnValueForMissingStub: _FakePreview_32(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
@@ -1943,11 +2027,11 @@ class MockProcessCameraProvider extends _i1.Mock
   _i2.ProcessCameraProvider pigeon_copy() =>
       (super.noSuchMethod(
             Invocation.method(#pigeon_copy, []),
-            returnValue: _FakeProcessCameraProvider_32(
+            returnValue: _FakeProcessCameraProvider_33(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
-            returnValueForMissingStub: _FakeProcessCameraProvider_32(
+            returnValueForMissingStub: _FakeProcessCameraProvider_33(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
@@ -1978,11 +2062,11 @@ class MockQualitySelector extends _i1.Mock implements _i2.QualitySelector {
   _i2.QualitySelector pigeon_copy() =>
       (super.noSuchMethod(
             Invocation.method(#pigeon_copy, []),
-            returnValue: _FakeQualitySelector_33(
+            returnValue: _FakeQualitySelector_34(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
-            returnValueForMissingStub: _FakeQualitySelector_33(
+            returnValueForMissingStub: _FakeQualitySelector_34(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
@@ -2032,13 +2116,13 @@ class MockRecorder extends _i1.Mock implements _i2.Recorder {
       (super.noSuchMethod(
             Invocation.method(#getQualitySelector, []),
             returnValue: _i5.Future<_i2.QualitySelector>.value(
-              _FakeQualitySelector_33(
+              _FakeQualitySelector_34(
                 this,
                 Invocation.method(#getQualitySelector, []),
               ),
             ),
             returnValueForMissingStub: _i5.Future<_i2.QualitySelector>.value(
-              _FakeQualitySelector_33(
+              _FakeQualitySelector_34(
                 this,
                 Invocation.method(#getQualitySelector, []),
               ),
@@ -2051,13 +2135,13 @@ class MockRecorder extends _i1.Mock implements _i2.Recorder {
       (super.noSuchMethod(
             Invocation.method(#prepareRecording, [path]),
             returnValue: _i5.Future<_i2.PendingRecording>.value(
-              _FakePendingRecording_28(
+              _FakePendingRecording_29(
                 this,
                 Invocation.method(#prepareRecording, [path]),
               ),
             ),
             returnValueForMissingStub: _i5.Future<_i2.PendingRecording>.value(
-              _FakePendingRecording_28(
+              _FakePendingRecording_29(
                 this,
                 Invocation.method(#prepareRecording, [path]),
               ),
@@ -2069,11 +2153,11 @@ class MockRecorder extends _i1.Mock implements _i2.Recorder {
   _i2.Recorder pigeon_copy() =>
       (super.noSuchMethod(
             Invocation.method(#pigeon_copy, []),
-            returnValue: _FakeRecorder_34(
+            returnValue: _FakeRecorder_35(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
-            returnValueForMissingStub: _FakeRecorder_34(
+            returnValueForMissingStub: _FakeRecorder_35(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
@@ -2104,11 +2188,11 @@ class MockResolutionFilter extends _i1.Mock implements _i2.ResolutionFilter {
   _i2.ResolutionFilter pigeon_copy() =>
       (super.noSuchMethod(
             Invocation.method(#pigeon_copy, []),
-            returnValue: _FakeResolutionFilter_35(
+            returnValue: _FakeResolutionFilter_36(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
-            returnValueForMissingStub: _FakeResolutionFilter_35(
+            returnValueForMissingStub: _FakeResolutionFilter_36(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
@@ -2160,11 +2244,11 @@ class MockResolutionSelector extends _i1.Mock
   _i2.ResolutionSelector pigeon_copy() =>
       (super.noSuchMethod(
             Invocation.method(#pigeon_copy, []),
-            returnValue: _FakeResolutionSelector_36(
+            returnValue: _FakeResolutionSelector_37(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
-            returnValueForMissingStub: _FakeResolutionSelector_36(
+            returnValueForMissingStub: _FakeResolutionSelector_37(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
@@ -2219,11 +2303,11 @@ class MockResolutionStrategy extends _i1.Mock
   _i2.ResolutionStrategy pigeon_copy() =>
       (super.noSuchMethod(
             Invocation.method(#pigeon_copy, []),
-            returnValue: _FakeResolutionStrategy_37(
+            returnValue: _FakeResolutionStrategy_38(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
-            returnValueForMissingStub: _FakeResolutionStrategy_37(
+            returnValueForMissingStub: _FakeResolutionStrategy_38(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
@@ -2290,11 +2374,11 @@ class MockRecording extends _i1.Mock implements _i2.Recording {
   _i2.Recording pigeon_copy() =>
       (super.noSuchMethod(
             Invocation.method(#pigeon_copy, []),
-            returnValue: _FakeRecording_29(
+            returnValue: _FakeRecording_30(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
-            returnValueForMissingStub: _FakeRecording_29(
+            returnValueForMissingStub: _FakeRecording_30(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
@@ -2374,11 +2458,11 @@ class MockSystemServicesManager extends _i1.Mock
   _i2.SystemServicesManager pigeon_copy() =>
       (super.noSuchMethod(
             Invocation.method(#pigeon_copy, []),
-            returnValue: _FakeSystemServicesManager_38(
+            returnValue: _FakeSystemServicesManager_39(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
-            returnValueForMissingStub: _FakeSystemServicesManager_38(
+            returnValueForMissingStub: _FakeSystemServicesManager_39(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
@@ -2410,10 +2494,10 @@ class MockVideoCapture extends _i1.Mock implements _i2.VideoCapture {
       (super.noSuchMethod(
             Invocation.method(#getOutput, []),
             returnValue: _i5.Future<_i2.VideoOutput>.value(
-              _FakeVideoOutput_39(this, Invocation.method(#getOutput, [])),
+              _FakeVideoOutput_40(this, Invocation.method(#getOutput, [])),
             ),
             returnValueForMissingStub: _i5.Future<_i2.VideoOutput>.value(
-              _FakeVideoOutput_39(this, Invocation.method(#getOutput, [])),
+              _FakeVideoOutput_40(this, Invocation.method(#getOutput, [])),
             ),
           )
           as _i5.Future<_i2.VideoOutput>);
@@ -2431,11 +2515,11 @@ class MockVideoCapture extends _i1.Mock implements _i2.VideoCapture {
   _i2.VideoCapture pigeon_copy() =>
       (super.noSuchMethod(
             Invocation.method(#pigeon_copy, []),
-            returnValue: _FakeVideoCapture_40(
+            returnValue: _FakeVideoCapture_41(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
-            returnValueForMissingStub: _FakeVideoCapture_40(
+            returnValueForMissingStub: _FakeVideoCapture_41(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
@@ -2484,11 +2568,11 @@ class MockZoomState extends _i1.Mock implements _i2.ZoomState {
   _i2.ZoomState pigeon_copy() =>
       (super.noSuchMethod(
             Invocation.method(#pigeon_copy, []),
-            returnValue: _FakeZoomState_41(
+            returnValue: _FakeZoomState_42(
               this,
               Invocation.method(#pigeon_copy, []),
             ),
-            returnValueForMissingStub: _FakeZoomState_41(
+            returnValueForMissingStub: _FakeZoomState_42(
               this,
               Invocation.method(#pigeon_copy, []),
             ),

@@ -44,6 +44,9 @@ final class MockCamera: NSObject, Camera {
   var setVideoStabilizationModeStub:
     ((PlatformVideoStabilizationMode, @escaping (Result<Void, any Error>) -> Void) -> Void)?
   var getIsVideoStabilizationModeSupportedStub: ((PlatformVideoStabilizationMode) -> Bool)?
+  var getCameraEffectsStub: (() -> [PlatformCameraEffectState])?
+  var showSystemEffectsUIStub: (() -> Void)?
+  var triggerReactionStub: ((String) -> Void)?
 
   var dartAPI: CameraEventApi? {
     get {
@@ -229,5 +232,17 @@ final class MockCamera: NSObject, Camera {
 
   func copyPixelBuffer() -> Unmanaged<CVPixelBuffer>? {
     return nil
+  }
+
+  func getCameraEffects() -> [PlatformCameraEffectState] {
+    return getCameraEffectsStub?() ?? []
+  }
+
+  func showSystemEffectsUI() {
+    showSystemEffectsUIStub?()
+  }
+
+  func triggerReaction(reactionType: String) {
+    triggerReactionStub?(reactionType)
   }
 }

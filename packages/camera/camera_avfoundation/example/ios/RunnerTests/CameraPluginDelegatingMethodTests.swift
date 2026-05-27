@@ -627,4 +627,49 @@ final class CameraPluginDelegatingMethodTests: XCTestCase {
 
     XCTAssertTrue(getMinimumExposureOffsetCalled)
   }
+
+  func testGetCameraEffects_callsCameraGetCameraEffects() {
+    let (cameraPlugin, mockCamera) = createCameraPlugin()
+
+    let targetEffects = [
+      PlatformCameraEffectState(
+        type: .portraitBlur, isSupported: true, isActive: true, isSystemManaged: true)
+    ]
+
+    var getCameraEffectsCalled = false
+    mockCamera.getCameraEffectsStub = {
+      getCameraEffectsCalled = true
+      return targetEffects
+    }
+
+    let result = try? cameraPlugin.getCameraEffects()
+    XCTAssertTrue(getCameraEffectsCalled)
+    XCTAssertEqual(result?.count, targetEffects.count)
+  }
+
+  func testShowSystemEffectsUI_callsCameraShowSystemEffectsUI() {
+    let (cameraPlugin, mockCamera) = createCameraPlugin()
+
+    var showSystemEffectsUICalled = false
+    mockCamera.showSystemEffectsUIStub = {
+      showSystemEffectsUICalled = true
+    }
+
+    try? cameraPlugin.showSystemEffectsUI()
+    XCTAssertTrue(showSystemEffectsUICalled)
+  }
+
+  func testTriggerReaction_callsCameraTriggerReaction() {
+    let (cameraPlugin, mockCamera) = createCameraPlugin()
+
+    let targetReaction = "balloons"
+    var triggerReactionCalled = false
+    mockCamera.triggerReactionStub = { reactionType in
+      XCTAssertEqual(reactionType, targetReaction)
+      triggerReactionCalled = true
+    }
+
+    try? cameraPlugin.triggerReaction(reactionType: targetReaction)
+    XCTAssertTrue(triggerReactionCalled)
+  }
 }

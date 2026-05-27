@@ -286,10 +286,22 @@ class AndroidCameraCameraX extends CameraPlatform {
   CameraIntegerRange? _targetFpsRange;
 
   /// The ID of the surface texture that the camera preview is drawn to.
-  late int _flutterSurfaceTextureId;
+  int _flutterSurfaceTextureId = -1;
 
   /// The configured format of outputted images from image streaming.
   int? _imageAnalysisOutputImageFormat;
+
+  /// The active camera effect/vendor extension.
+  CameraEffectType? _activeEffect;
+
+  /// The [ExtensionsManager] used to handle CameraX vendor extensions.
+  @visibleForTesting
+  ExtensionsManager? extensionsManager;
+
+  /// StreamController to broadcast camera effect state changes.
+  @visibleForTesting
+  final StreamController<CameraEffectState> cameraEffectStateStreamController =
+      StreamController<CameraEffectState>.broadcast();
 
   /// Returns list of all available cameras and their descriptions.
   @override
@@ -486,7 +498,7 @@ class AndroidCameraCameraX extends CameraPlatform {
     // instance as bound but not paused. Video capture is bound at first use
     // instead of here.
     camera = await processCameraProvider!.bindToLifecycle(
-      cameraSelector!,
+      await _getCameraSelectorWithActiveEffect(),
       <UseCase>[preview!, imageCapture!, imageAnalysis!],
     );
     await _updateCameraInfoAndLiveCameraState(_flutterSurfaceTextureId);
@@ -1009,7 +1021,7 @@ class AndroidCameraCameraX extends CameraPlatform {
     }
     await processCameraProvider?.unbindAll();
     camera = await processCameraProvider?.bindToLifecycle(
-      cameraSelector!,
+      await _getCameraSelectorWithActiveEffect(),
       useCases,
     );
 
@@ -1322,7 +1334,7 @@ class AndroidCameraCameraX extends CameraPlatform {
     }
 
     camera = await processCameraProvider!.bindToLifecycle(
-      cameraSelector!,
+      await _getCameraSelectorWithActiveEffect(),
       <UseCase>[useCase],
     );
 
@@ -1889,5 +1901,236 @@ class AndroidCameraCameraX extends CameraPlatform {
           '"$orientation" is not a valid DeviceOrientation value',
         );
     }
+  }
+
+  /// Retrieves the [ExtensionsManager] instance.
+  Future<ExtensionsManager> _getExtensionsManager() async {
+    if (extensionsManager != null) {
+      return extensionsManager!;
+    }
+    processCameraProvider ??= await ProcessCameraProvider.getInstance();
+    extensionsManager = await ExtensionsManager.getInstance(
+      processCameraProvider!,
+    );
+    return extensionsManager!;
+  }
+
+  /// Returns a [CameraSelector] with the active camera effect applied, if any.
+  Future<CameraSelector> _getCameraSelectorWithActiveEffect() async {
+    final CameraSelector baseSelector = cameraSelector!;
+    if (_activeEffect == null) {
+      return baseSelector;
+    }
+    final ExtensionsManager manager = await _getExtensionsManager();
+    final CameraXExtensionMode mode = _mapCameraEffectToExtensionMode(
+      _activeEffect!,
+    );
+    final bool isAvailable = await manager.isExtensionAvailable(
+      baseSelector,
+      mode,
+    );
+    if (!isAvailable) {
+      return baseSelector;
+    }
+    return manager.getExtensionEnabledCameraSelector(baseSelector, mode);
+  }
+
+  /// Rebinds all currently bound [UseCase]s to the camera lifecycle.
+  ///
+  /// This is necessary because CameraX vendor extensions can only be applied
+  /// by binding UseCases using an extension-enabled [CameraSelector].
+  Future<void> _rebindUseCases() async {
+    if (processCameraProvider == null || cameraSelector == null) {
+      return;
+    }
+    final boundUseCases = <UseCase>[];
+    if (preview != null && await processCameraProvider!.isBound(preview!)) {
+      boundUseCases.add(preview!);
+    }
+    if (imageCapture != null &&
+        await processCameraProvider!.isBound(imageCapture!)) {
+      boundUseCases.add(imageCapture!);
+    }
+    if (imageAnalysis != null &&
+        await processCameraProvider!.isBound(imageAnalysis!)) {
+      boundUseCases.add(imageAnalysis!);
+    }
+    if (videoCapture != null &&
+        await processCameraProvider!.isBound(videoCapture!)) {
+      boundUseCases.add(videoCapture!);
+    }
+
+    if (boundUseCases.isEmpty) {
+      return;
+    }
+
+    await processCameraProvider!.unbindAll();
+
+    final CameraSelector activeSelector =
+        await _getCameraSelectorWithActiveEffect();
+    camera = await processCameraProvider!.bindToLifecycle(
+      activeSelector,
+      boundUseCases,
+    );
+
+    if (camera != null && _flutterSurfaceTextureId >= 0) {
+      await _updateCameraInfoAndLiveCameraState(_flutterSurfaceTextureId);
+    }
+  }
+
+  /// Maps [CameraEffectType] to [CameraXExtensionMode].
+  CameraXExtensionMode _mapCameraEffectToExtensionMode(CameraEffectType type) {
+    switch (type) {
+      case CameraEffectType.portraitBlur:
+        return CameraXExtensionMode.bokeh;
+      case CameraEffectType.hdr:
+        return CameraXExtensionMode.hdr;
+      case CameraEffectType.night:
+        return CameraXExtensionMode.night;
+      case CameraEffectType.faceRetouch:
+        return CameraXExtensionMode.faceRetouch;
+      case CameraEffectType.centerStage:
+      case CameraEffectType.studioLight:
+      case CameraEffectType.reactions:
+        return CameraXExtensionMode.none;
+    }
+  }
+
+  @override
+  Future<List<CameraEffectState>> getCameraEffects(int cameraId) async {
+    if (cameraSelector == null) {
+      return <CameraEffectState>[];
+    }
+    final ExtensionsManager manager = await _getExtensionsManager();
+    final states = <CameraEffectState>[];
+
+    const androidEffects = <CameraEffectType>[
+      CameraEffectType.portraitBlur,
+      CameraEffectType.hdr,
+      CameraEffectType.night,
+      CameraEffectType.faceRetouch,
+    ];
+
+    for (final effect in androidEffects) {
+      final CameraXExtensionMode mode = _mapCameraEffectToExtensionMode(effect);
+      final bool isSupported = await manager.isExtensionAvailable(
+        cameraSelector!,
+        mode,
+      );
+      final isActive = _activeEffect == effect;
+      states.add(
+        CameraEffectState(
+          type: effect,
+          isSupported: isSupported,
+          isActive: isActive,
+          isSystemManaged: false,
+        ),
+      );
+    }
+
+    // Add unsupported iOS-specific effects as not supported
+    const iosEffects = <CameraEffectType>[
+      CameraEffectType.centerStage,
+      CameraEffectType.studioLight,
+      CameraEffectType.reactions,
+    ];
+    for (final effect in iosEffects) {
+      states.add(
+        CameraEffectState(
+          type: effect,
+          isSupported: false,
+          isActive: false,
+          isSystemManaged: true,
+        ),
+      );
+    }
+
+    return states;
+  }
+
+  @override
+  Future<void> setCameraEffectActive(
+    int cameraId,
+    CameraEffectType type,
+    bool active,
+  ) async {
+    if (cameraSelector == null) {
+      throw CameraException(
+        'cameraNotFound',
+        'Camera not found. Please call createCamera before setting camera effects.',
+      );
+    }
+    if (type == CameraEffectType.centerStage ||
+        type == CameraEffectType.studioLight ||
+        type == CameraEffectType.reactions) {
+      throw PlatformException(
+        code: 'unsupportedEffect',
+        message: 'The effect ${type.name} is not supported on Android.',
+      );
+    }
+
+    final ExtensionsManager manager = await _getExtensionsManager();
+    final CameraXExtensionMode mode = _mapCameraEffectToExtensionMode(type);
+    final bool isSupported = await manager.isExtensionAvailable(
+      cameraSelector!,
+      mode,
+    );
+    if (!isSupported) {
+      throw CameraException(
+        'unsupportedEffect',
+        'The effect ${type.name} is not supported on this device.',
+      );
+    }
+
+    final CameraEffectType? previousEffect = _activeEffect;
+    if (active) {
+      _activeEffect = type;
+    } else {
+      if (_activeEffect == type) {
+        _activeEffect = null;
+      }
+    }
+
+    if (_activeEffect != previousEffect) {
+      // Re-bind use cases to apply the new camera selector with extension
+      await _rebindUseCases();
+
+      // Emit the changed states
+      cameraEffectStateStreamController.add(
+        CameraEffectState(
+          type: type,
+          isSupported: true,
+          isActive: active,
+          isSystemManaged: false,
+        ),
+      );
+      if (previousEffect != null) {
+        cameraEffectStateStreamController.add(
+          CameraEffectState(
+            type: previousEffect,
+            isSupported: true,
+            isActive: false,
+            isSystemManaged: false,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Stream<CameraEffectState> onCameraEffectsChanged(int cameraId) {
+    return cameraEffectStateStreamController.stream;
+  }
+
+  @override
+  Future<void> showSystemEffectsUI(int cameraId) {
+    throw UnimplementedError(
+      'showSystemEffectsUI() is not supported on Android.',
+    );
+  }
+
+  @override
+  Future<void> triggerReaction(int cameraId, String reactionType) {
+    throw UnimplementedError('triggerReaction() is not supported on Android.');
   }
 }

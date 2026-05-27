@@ -20,6 +20,10 @@ protocol CaptureDeviceFormat: NSObjectProtocol {
 
   var formatDescription: CMFormatDescription { get }
   var flutterVideoSupportedFrameRateRanges: [FrameRateRange] { get }
+  var flutterIsPortraitEffectSupported: Bool { get }
+  var flutterIsCenterStageSupported: Bool { get }
+  var flutterIsStudioLightSupported: Bool { get }
+  var flutterReactionEffectsSupported: Bool { get }
 }
 
 extension AVFrameRateRange: FrameRateRange {}
@@ -28,4 +32,34 @@ extension AVCaptureDevice.Format: CaptureDeviceFormat {
   var avFormat: AVCaptureDevice.Format { self }
 
   var flutterVideoSupportedFrameRateRanges: [FrameRateRange] { videoSupportedFrameRateRanges }
+
+  var flutterIsPortraitEffectSupported: Bool {
+    if #available(iOS 15.0, *) {
+      return isPortraitEffectSupported
+    }
+    return false
+  }
+
+  var flutterIsCenterStageSupported: Bool {
+    if #available(iOS 14.5, *) {
+      return isCenterStageSupported
+    }
+    return false
+  }
+
+  var flutterIsStudioLightSupported: Bool {
+    if #available(iOS 16.0, *) {
+      return isStudioLightSupported
+    }
+    return false
+  }
+
+  var flutterReactionEffectsSupported: Bool {
+    #if compiler(>=5.9)
+      if #available(iOS 17.0, *) {
+        return reactionEffectsSupported
+      }
+    #endif
+    return false
+  }
 }

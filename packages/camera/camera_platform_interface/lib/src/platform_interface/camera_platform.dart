@@ -355,4 +355,44 @@ abstract class CameraPlatform extends PlatformInterface {
   Future<void> setJpegImageQuality(int cameraId, int quality) {
     throw UnimplementedError('setJpegImageQuality() is not implemented.');
   }
+
+  /// Queries the supported effects and their current states for the given [cameraId].
+  Future<List<CameraEffectState>> getCameraEffects(int cameraId) {
+    throw UnimplementedError('getCameraEffects() is not implemented.');
+  }
+
+  /// Toggles a specific camera effect programmatically.
+  ///
+  /// If the effect is [CameraEffectState.isSystemManaged], this method will throw
+  /// a [PlatformException] on platforms where programmatic toggling is not allowed (e.g., iOS).
+  Future<void> setCameraEffectActive(
+    int cameraId,
+    CameraEffectType type,
+    bool active,
+  ) {
+    throw UnimplementedError('setCameraEffectActive() is not implemented.');
+  }
+
+  /// Listens to real-time changes in camera effect states.
+  ///
+  /// This is particularly important on iOS where the system OS manages effects
+  /// globally and users can toggle them via the system Control Center UI at any time.
+  Stream<CameraEffectState> onCameraEffectsChanged(int cameraId) {
+    throw UnimplementedError('onCameraEffectsChanged() is not implemented.');
+  }
+
+  /// Shows the system UI for managing video effects.
+  ///
+  /// This is supported on iOS to present the Control Center's video effects panel.
+  Future<void> showSystemEffectsUI(int cameraId) {
+    throw UnimplementedError('showSystemEffectsUI() is not implemented.');
+  }
+
+  /// Programmatically triggers a specific native animation reaction (iOS 17+).
+  ///
+  /// [reactionType] should correspond to standard native types such as thumbsUp,
+  /// balloons, fireworks, etc.
+  Future<void> triggerReaction(int cameraId, String reactionType) {
+    throw UnimplementedError('triggerReaction() is not implemented.');
+  }
 }

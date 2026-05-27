@@ -54,3 +54,37 @@ CameraImagePlane _cameraImagePlaneFromPlatformData(
     height: data.height,
   );
 }
+
+/// Converts [PlatformCameraEffectState] to [CameraEffectState].
+CameraEffectState cameraEffectStateFromPlatformData(
+  PlatformCameraEffectState data,
+) {
+  return CameraEffectState(
+    type: cameraEffectTypeFromPlatformData(data.type),
+    isSupported: data.isSupported,
+    isActive: data.isActive,
+    isSystemManaged: data.isSystemManaged,
+  );
+}
+
+/// Converts [PlatformCameraEffectType] to [CameraEffectType].
+CameraEffectType cameraEffectTypeFromPlatformData(
+  PlatformCameraEffectType type,
+) {
+  switch (type) {
+    case PlatformCameraEffectType.portraitBlur:
+      return CameraEffectType.portraitBlur;
+    case PlatformCameraEffectType.faceRetouch:
+      return CameraEffectType.faceRetouch;
+    case PlatformCameraEffectType.hdr:
+      return CameraEffectType.hdr;
+    case PlatformCameraEffectType.night:
+      return CameraEffectType.night;
+    case PlatformCameraEffectType.centerStage:
+      return CameraEffectType.centerStage;
+    case PlatformCameraEffectType.studioLight:
+      return CameraEffectType.studioLight;
+    case PlatformCameraEffectType.reactions:
+      return CameraEffectType.reactions;
+  }
+}

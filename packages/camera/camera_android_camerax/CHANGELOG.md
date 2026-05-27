@@ -1,5 +1,6 @@
-## NEXT
+## 0.7.3
 
+* Integrates CameraX ExtensionsManager to support vendor extensions (HDR, Night, Portrait Blur, Face Retouch).
 * Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
 
 ## 0.7.2

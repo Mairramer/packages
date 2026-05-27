@@ -535,6 +535,80 @@ void main() {
     );
 
     test(
+      'Default implementation of getCameraEffects() should throw unimplemented error',
+      () {
+        // Arrange
+        final cameraPlatform = ExtendsCameraPlatform();
+
+        // Act & Assert
+        expect(
+          () => cameraPlatform.getCameraEffects(1),
+          throwsUnimplementedError,
+        );
+      },
+    );
+
+    test(
+      'Default implementation of setCameraEffectActive() should throw unimplemented error',
+      () {
+        // Arrange
+        final cameraPlatform = ExtendsCameraPlatform();
+
+        // Act & Assert
+        expect(
+          () => cameraPlatform.setCameraEffectActive(
+            1,
+            CameraEffectType.portraitBlur,
+            true,
+          ),
+          throwsUnimplementedError,
+        );
+      },
+    );
+
+    test(
+      'Default implementation of onCameraEffectsChanged() should throw unimplemented error',
+      () {
+        // Arrange
+        final cameraPlatform = ExtendsCameraPlatform();
+
+        // Act & Assert
+        expect(
+          () => cameraPlatform.onCameraEffectsChanged(1),
+          throwsUnimplementedError,
+        );
+      },
+    );
+
+    test(
+      'Default implementation of showSystemEffectsUI() should throw unimplemented error',
+      () {
+        // Arrange
+        final cameraPlatform = ExtendsCameraPlatform();
+
+        // Act & Assert
+        expect(
+          () => cameraPlatform.showSystemEffectsUI(1),
+          throwsUnimplementedError,
+        );
+      },
+    );
+
+    test(
+      'Default implementation of triggerReaction() should throw unimplemented error',
+      () {
+        // Arrange
+        final cameraPlatform = ExtendsCameraPlatform();
+
+        // Act & Assert
+        expect(
+          () => cameraPlatform.triggerReaction(1, 'balloons'),
+          throwsUnimplementedError,
+        );
+      },
+    );
+
+    test(
       'Default implementation of supportsImageStreaming() should return false',
       () {
         // Arrange
@@ -632,6 +706,20 @@ void main() {
 
     test('VideoCaptureOptions is exported', () {
       const VideoCaptureOptions(123);
+    });
+
+    test('CameraEffectType is exported', () {
+      // ignore: unnecessary_statements
+      CameraEffectType.portraitBlur;
+    });
+
+    test('CameraEffectState is exported', () {
+      const CameraEffectState(
+        type: CameraEffectType.portraitBlur,
+        isSupported: true,
+        isActive: false,
+        isSystemManaged: false,
+      );
     });
   });
 }

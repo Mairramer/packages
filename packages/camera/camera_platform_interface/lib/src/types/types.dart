@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 export 'camera_description.dart';
+export 'camera_effect.dart';
 export 'camera_exception.dart';
 export 'camera_image_data.dart';
 export 'exposure_mode.dart';

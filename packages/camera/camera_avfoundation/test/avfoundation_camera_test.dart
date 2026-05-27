@@ -992,5 +992,69 @@ void main() {
 
       verify(mockApi.setImageFileFormat(PlatformImageFileFormat.jpeg));
     });
+
+    test('Should get camera effects', () async {
+      final returnData = <PlatformCameraEffectState>[
+        PlatformCameraEffectState(
+          type: PlatformCameraEffectType.portraitBlur,
+          isSupported: true,
+          isActive: false,
+          isSystemManaged: true,
+        ),
+      ];
+      when(mockApi.getCameraEffects()).thenAnswer((_) async => returnData);
+
+      final List<CameraEffectState> effects = await camera.getCameraEffects(
+        cameraId,
+      );
+
+      expect(effects.length, 1);
+      expect(effects[0].type, CameraEffectType.portraitBlur);
+      expect(effects[0].isSupported, true);
+      expect(effects[0].isActive, false);
+      expect(effects[0].isSystemManaged, true);
+    });
+
+    test('Should throw when setting camera effect active', () {
+      expect(
+        () => camera.setCameraEffectActive(
+          cameraId,
+          CameraEffectType.portraitBlur,
+          true,
+        ),
+        throwsA(isA<PlatformException>()),
+      );
+    });
+
+    test('Should receive camera effect events', () async {
+      final Stream<CameraEffectState> eventStream = camera
+          .onCameraEffectsChanged(cameraId);
+      final streamQueue = StreamQueue<CameraEffectState>(eventStream);
+
+      camera.hostCameraHandlers[cameraId]!.effectChanged(
+        PlatformCameraEffectState(
+          type: PlatformCameraEffectType.portraitBlur,
+          isSupported: true,
+          isActive: true,
+          isSystemManaged: true,
+        ),
+      );
+
+      final event = await streamQueue.next;
+      expect(event.type, CameraEffectType.portraitBlur);
+      expect(event.isActive, true);
+
+      await streamQueue.cancel();
+    });
+
+    test('Should show system effects UI', () async {
+      await camera.showSystemEffectsUI(cameraId);
+      verify(mockApi.showSystemEffectsUI());
+    });
+
+    test('Should trigger reaction', () async {
+      await camera.triggerReaction(cameraId, 'thumbsUp');
+      verify(mockApi.triggerReaction('thumbsUp'));
+    });
   });
 }

@@ -128,5 +128,9 @@ protocol Camera: FlutterTexture, AVCaptureVideoDataOutputSampleBufferDelegate,
     from connection: AVCaptureConnection
   )
 
+  func getCameraEffects() -> [PlatformCameraEffectState]
+  func showSystemEffectsUI()
+  func triggerReaction(reactionType: String)
+
   func close()
 }
