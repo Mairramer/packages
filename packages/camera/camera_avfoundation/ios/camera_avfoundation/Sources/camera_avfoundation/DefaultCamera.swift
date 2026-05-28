@@ -1465,7 +1465,6 @@ final class DefaultCamera: NSObject, Camera {
   func getCameraEffects() -> [PlatformCameraEffectState] {
     var effects: [PlatformCameraEffectState] = []
 
-    // Note: iOS 15.0+ for portrait
     if #available(iOS 15.0, *) {
       effects.append(
         PlatformCameraEffectState(
@@ -1525,7 +1524,8 @@ final class DefaultCamera: NSObject, Camera {
     #if compiler(>=5.9)
       if #available(iOS 17.0, *) {
         let reaction = AVCaptureReactionType(rawValue: reactionType)
-        if captureDevice.avDevice.canPerformReactionEffects {
+        if captureDevice.avDevice.canPerformReactionEffects,
+           captureDevice.avDevice.availableReactionTypes.contains(reaction) {
           captureDevice.avDevice.performEffect(for: reaction)
         }
       }
