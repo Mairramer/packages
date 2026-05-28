@@ -49,6 +49,8 @@ enum CameraEffectType {
   /// Multi-layered animations triggered by hand gestures.
   ///
   /// On iOS, this represents the AVFoundation Reaction Effects.
+  /// Note: Apps must opt-in by setting the `NSCameraReactionEffectsEnabled` key to `true`
+  /// in their `Info.plist` file, unless they use the Voice over IP background mode.
   /// See https://developer.apple.com/documentation/avfoundation/avcapturedevice/reactioneffectsenabled
   reactions,
 }

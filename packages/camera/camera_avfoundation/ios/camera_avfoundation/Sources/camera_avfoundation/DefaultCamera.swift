@@ -1501,8 +1501,8 @@ final class DefaultCamera: NSObject, Camera {
         effects.append(
           PlatformCameraEffectState(
             type: .reactions,
-            isSupported: captureDevice.flutterActiveFormat.flutterReactionEffectsSupported,
-            isActive: AVCaptureDevice.reactionEffectsEnabled,
+            isSupported: captureDevice.flutterActiveFormat.flutterReactionEffectsSupported && AVCaptureDevice.reactionEffectsEnabled,
+            isActive: AVCaptureDevice.reactionEffectGesturesEnabled,
             isSystemManaged: true
           ))
       }

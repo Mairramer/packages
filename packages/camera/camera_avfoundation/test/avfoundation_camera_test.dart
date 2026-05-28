@@ -1040,7 +1040,7 @@ void main() {
         ),
       );
 
-      final event = await streamQueue.next;
+      final CameraEffectState event = await streamQueue.next;
       expect(event.type, CameraEffectType.portraitBlur);
       expect(event.isActive, true);
 
@@ -1053,7 +1053,7 @@ void main() {
     });
 
     test('Should trigger reaction', () async {
-      await camera.triggerReaction(cameraId, 'thumbsUp');
+      await camera.triggerReaction(cameraId, CameraReaction.thumbsUp);
       verify(mockApi.triggerReaction('thumbsUp'));
     });
   });

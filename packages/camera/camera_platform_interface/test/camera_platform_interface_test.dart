@@ -602,7 +602,7 @@ void main() {
 
         // Act & Assert
         expect(
-          () => cameraPlatform.triggerReaction(1, 'balloons'),
+          () => cameraPlatform.triggerReaction(1, CameraReaction.balloons),
           throwsUnimplementedError,
         );
       },

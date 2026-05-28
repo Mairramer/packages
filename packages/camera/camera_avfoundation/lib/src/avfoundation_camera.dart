@@ -476,8 +476,8 @@ class AVFoundationCamera extends CameraPlatform {
   }
 
   @override
-  Future<void> triggerReaction(int cameraId, String reactionType) async {
-    await _hostApi.triggerReaction(reactionType);
+  Future<void> triggerReaction(int cameraId, CameraReaction reaction) async {
+    await _hostApi.triggerReaction(reaction.name);
   }
 
   @override

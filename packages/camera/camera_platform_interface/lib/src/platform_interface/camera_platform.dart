@@ -364,7 +364,8 @@ abstract class CameraPlatform extends PlatformInterface {
   /// Toggles a specific camera effect programmatically.
   ///
   /// If the effect is [CameraEffectState.isSystemManaged], this method will throw
-  /// a [PlatformException] on platforms where programmatic toggling is not allowed (e.g., iOS).
+  /// a [PlatformException] on platforms where programmatic toggling is not allowed (this is true for
+  /// iOS Center Stage, for example).
   Future<void> setCameraEffectActive(
     int cameraId,
     CameraEffectType type,
@@ -390,9 +391,9 @@ abstract class CameraPlatform extends PlatformInterface {
 
   /// Programmatically triggers a specific native animation reaction (iOS 17+).
   ///
-  /// [reactionType] should correspond to standard native types such as thumbsUp,
+  /// [reaction] should correspond to standard native types such as thumbsUp,
   /// balloons, fireworks, etc.
-  Future<void> triggerReaction(int cameraId, String reactionType) {
+  Future<void> triggerReaction(int cameraId, CameraReaction reaction) {
     throw UnimplementedError('triggerReaction() is not implemented.');
   }
 }

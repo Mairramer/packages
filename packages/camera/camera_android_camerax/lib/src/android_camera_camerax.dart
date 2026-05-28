@@ -2130,7 +2130,7 @@ class AndroidCameraCameraX extends CameraPlatform {
   }
 
   @override
-  Future<void> triggerReaction(int cameraId, String reactionType) {
+  Future<void> triggerReaction(int cameraId, CameraReaction reactionType) {
     throw UnimplementedError('triggerReaction() is not supported on Android.');
   }
 }
