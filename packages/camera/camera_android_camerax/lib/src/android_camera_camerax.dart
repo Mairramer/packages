@@ -12,6 +12,7 @@ import 'package:flutter/services.dart'
     show DeviceOrientation, PlatformException;
 import 'package:flutter/widgets.dart' show Texture, Widget, visibleForTesting;
 import 'package:stream_transform/stream_transform.dart';
+
 import 'camerax_library.dart';
 import 'rotated_preview_delegate.dart';
 
@@ -1915,6 +1916,10 @@ class AndroidCameraCameraX extends CameraPlatform {
     return extensionsManager!;
   }
 
+  // Semaphore used to serialize _rebindUseCases() calls to avoid
+  // concurrent rebinds causing race conditions in CameraX.
+  Future<void>? _rebindUseCasesSemaphore;
+
   /// Returns a [CameraSelector] with the active camera effect applied, if any.
   Future<CameraSelector> _getCameraSelectorWithActiveEffect() async {
     final CameraSelector baseSelector = cameraSelector!;
@@ -1943,38 +1948,58 @@ class AndroidCameraCameraX extends CameraPlatform {
     if (processCameraProvider == null || cameraSelector == null) {
       return;
     }
-    final boundUseCases = <UseCase>[];
-    if (preview != null && await processCameraProvider!.isBound(preview!)) {
-      boundUseCases.add(preview!);
-    }
-    if (imageCapture != null &&
-        await processCameraProvider!.isBound(imageCapture!)) {
-      boundUseCases.add(imageCapture!);
-    }
-    if (imageAnalysis != null &&
-        await processCameraProvider!.isBound(imageAnalysis!)) {
-      boundUseCases.add(imageAnalysis!);
-    }
-    if (videoCapture != null &&
-        await processCameraProvider!.isBound(videoCapture!)) {
-      boundUseCases.add(videoCapture!);
+
+    // If a rebind is already in progress, await it so callers serialize.
+    while (_rebindUseCasesSemaphore != null) {
+      try {
+        await _rebindUseCasesSemaphore;
+      } catch (_) {
+        // ignore errors from previous rebinds; continue to attempt current one
+      }
     }
 
-    if (boundUseCases.isEmpty) {
-      return;
-    }
+    final completer = Completer<void>();
+    _rebindUseCasesSemaphore = completer.future;
+    try {
+      final boundUseCases = <UseCase>[];
+      if (preview != null && await processCameraProvider!.isBound(preview!)) {
+        boundUseCases.add(preview!);
+      }
+      if (imageCapture != null &&
+          await processCameraProvider!.isBound(imageCapture!)) {
+        boundUseCases.add(imageCapture!);
+      }
+      if (imageAnalysis != null &&
+          await processCameraProvider!.isBound(imageAnalysis!)) {
+        boundUseCases.add(imageAnalysis!);
+      }
+      if (videoCapture != null &&
+          await processCameraProvider!.isBound(videoCapture!)) {
+        boundUseCases.add(videoCapture!);
+      }
 
-    await processCameraProvider!.unbindAll();
+      if (boundUseCases.isEmpty) {
+        return;
+      }
 
-    final CameraSelector activeSelector =
-        await _getCameraSelectorWithActiveEffect();
-    camera = await processCameraProvider!.bindToLifecycle(
-      activeSelector,
-      boundUseCases,
-    );
+      await processCameraProvider!.unbindAll();
 
-    if (camera != null && _flutterSurfaceTextureId >= 0) {
-      await _updateCameraInfoAndLiveCameraState(_flutterSurfaceTextureId);
+      final CameraSelector activeSelector =
+          await _getCameraSelectorWithActiveEffect();
+      camera = await processCameraProvider!.bindToLifecycle(
+        activeSelector,
+        boundUseCases,
+      );
+
+      if (camera != null && _flutterSurfaceTextureId >= 0) {
+        await _updateCameraInfoAndLiveCameraState(_flutterSurfaceTextureId);
+      }
+    } finally {
+      // Complete the semaphore and clear it so waiting callers may proceed.
+      if (!completer.isCompleted) {
+        completer.complete();
+      }
+      _rebindUseCasesSemaphore = null;
     }
   }
 
@@ -2082,7 +2107,18 @@ class AndroidCameraCameraX extends CameraPlatform {
       );
     }
 
+    // Short-circuit when requesting the same state to avoid unnecessary work.
+    if (active && _activeEffect == type) {
+      return;
+    }
+    if (!active && _activeEffect != type) {
+      return;
+    }
+
     final CameraEffectType? previousEffect = _activeEffect;
+
+    // Apply requested state locally first so _getCameraSelectorWithActiveEffect
+    // will return correct selector during rebind. If rebind fails, revert.
     if (active) {
       _activeEffect = type;
     } else {
@@ -2093,7 +2129,19 @@ class AndroidCameraCameraX extends CameraPlatform {
 
     if (_activeEffect != previousEffect) {
       // Re-bind use cases to apply the new camera selector with extension
-      await _rebindUseCases();
+      try {
+        await _rebindUseCases();
+      } catch (e) {
+        // Emit an error and revert internal state to what it was before.
+        cameraErrorStreamController.add(
+          'Failed to apply camera effect ${type.name}: $e',
+        );
+        _activeEffect = previousEffect;
+        throw CameraException(
+          'effectBindFailed',
+          'Applying camera effect ${type.name} failed: $e',
+        );
+      }
 
       // Emit the changed states
       cameraEffectStateStreamController.add(
@@ -2130,7 +2178,7 @@ class AndroidCameraCameraX extends CameraPlatform {
   }
 
   @override
-  Future<void> triggerReaction(int cameraId, CameraReaction reactionType) {
+  Future<void> triggerReaction(int cameraId, CameraReaction reaction) {
     throw UnimplementedError('triggerReaction() is not supported on Android.');
   }
 }

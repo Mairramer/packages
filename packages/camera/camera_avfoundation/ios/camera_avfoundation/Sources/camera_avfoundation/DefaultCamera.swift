@@ -1500,7 +1500,8 @@ final class DefaultCamera: NSObject, Camera {
         effects.append(
           PlatformCameraEffectState(
             type: .reactions,
-            isSupported: captureDevice.flutterActiveFormat.flutterReactionEffectsSupported && AVCaptureDevice.reactionEffectsEnabled,
+            isSupported: captureDevice.flutterActiveFormat.flutterReactionEffectsSupported
+              && AVCaptureDevice.reactionEffectsEnabled,
             isActive: AVCaptureDevice.reactionEffectGesturesEnabled,
             isSystemManaged: true
           ))
@@ -1525,7 +1526,8 @@ final class DefaultCamera: NSObject, Camera {
       if #available(iOS 17.0, *) {
         let reaction = AVCaptureReactionType(rawValue: reactionType)
         if captureDevice.avDevice.canPerformReactionEffects,
-           captureDevice.avDevice.availableReactionTypes.contains(reaction) {
+          captureDevice.avDevice.availableReactionTypes.contains(reaction)
+        {
           captureDevice.avDevice.performEffect(for: reaction)
         }
       }
