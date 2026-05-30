@@ -25,6 +25,18 @@ final class MockCaptureDeviceFormat: NSObject, CaptureDeviceFormat {
   /// The array of frame rate ranges supported by the video format.
   var flutterVideoSupportedFrameRateRanges: [FrameRateRange] = []
 
+  /// Whether Portrait Effects (e.g., depth-based portrait mode) is supported.
+  var flutterIsPortraitEffectSupported: Bool = false
+
+  /// Whether Center Stage is supported for this format.
+  var flutterIsCenterStageSupported: Bool = false
+
+  /// Whether Studio Light is supported for this format.
+  var flutterIsStudioLightSupported: Bool = false
+
+  /// Whether reaction effects are supported for this format.
+  var flutterReactionEffectsSupported: Bool = false
+
   override init() {
     super.init()
 

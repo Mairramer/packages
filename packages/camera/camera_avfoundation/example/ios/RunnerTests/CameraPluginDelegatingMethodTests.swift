@@ -642,9 +642,19 @@ final class CameraPluginDelegatingMethodTests: XCTestCase {
       return targetEffects
     }
 
-    let result = try? cameraPlugin.getCameraEffects()
+    let expectation = expectation(description: "Call completed")
+    cameraPlugin.getCameraEffects { result in
+      switch result {
+      case .success(let effects):
+        XCTAssertEqual(effects.count, targetEffects.count)
+      case .failure(let error):
+        XCTFail("getCameraEffects failed: \(error)")
+      }
+      expectation.fulfill()
+    }
+
+    waitForExpectations(timeout: 30, handler: nil)
     XCTAssertTrue(getCameraEffectsCalled)
-    XCTAssertEqual(result?.count, targetEffects.count)
   }
 
   func testShowSystemEffectsUI_callsCameraShowSystemEffectsUI() {
@@ -655,7 +665,17 @@ final class CameraPluginDelegatingMethodTests: XCTestCase {
       showSystemEffectsUICalled = true
     }
 
-    try? cameraPlugin.showSystemEffectsUI()
+    let expectation = expectation(description: "Call completed")
+    cameraPlugin.showSystemEffectsUI { result in
+      switch result {
+      case .success:
+        break
+      case .failure(let error):
+        XCTFail("showSystemEffectsUI failed: \(error)")
+      }
+      expectation.fulfill()
+    }
+    waitForExpectations(timeout: 30, handler: nil)
     XCTAssertTrue(showSystemEffectsUICalled)
   }
 
@@ -669,7 +689,17 @@ final class CameraPluginDelegatingMethodTests: XCTestCase {
       triggerReactionCalled = true
     }
 
-    try? cameraPlugin.triggerReaction(reactionType: targetReaction)
+    let expectation = expectation(description: "Call completed")
+    cameraPlugin.triggerReaction(reactionType: targetReaction) { result in
+      switch result {
+      case .success:
+        break
+      case .failure(let error):
+        XCTFail("triggerReaction failed: \(error)")
+      }
+      expectation.fulfill()
+    }
+    waitForExpectations(timeout: 30, handler: nil)
     XCTAssertTrue(triggerReactionCalled)
   }
 }
