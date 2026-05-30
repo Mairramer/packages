@@ -372,6 +372,30 @@ class CameraController extends ValueNotifier<CameraValue> {
     }
   }
 
+  /// Queries the supported camera effects and their states for this controller's camera.
+  Future<List<CameraEffectState>> getCameraEffects() async {
+    _throwIfNotInitialized('getCameraEffects');
+    try {
+      return await CameraPlatform.instance.getCameraEffects(_cameraId);
+    } on PlatformException catch (e) {
+      throw CameraException(e.code, e.message);
+    }
+  }
+
+  /// Toggles a camera effect programmatically for this controller's camera.
+  Future<void> setCameraEffectActive(CameraEffectType type, bool active) async {
+    _throwIfNotInitialized('setCameraEffectActive');
+    try {
+      await CameraPlatform.instance.setCameraEffectActive(
+        _cameraId,
+        type,
+        active,
+      );
+    } on PlatformException catch (e) {
+      throw CameraException(e.code, e.message);
+    }
+  }
+
   /// Resumes the current camera preview
   Future<void> resumePreview() async {
     if (!value.isPreviewPaused) {

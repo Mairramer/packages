@@ -1982,14 +1982,45 @@ class AndroidCameraCameraX extends CameraPlatform {
         return;
       }
 
-      await processCameraProvider!.unbindAll();
-
+      // Compute the active selector before unbinding to minimize the time the
+      // camera is without bound UseCases. Obtaining an extension-enabled
+      // selector may involve async work, so do it upfront to shorten the
+      // unbound window and reduce preview freezes on some devices.
       final CameraSelector activeSelector =
           await _getCameraSelectorWithActiveEffect();
-      camera = await processCameraProvider!.bindToLifecycle(
-        activeSelector,
-        boundUseCases,
-      );
+
+      // Prepare the list of use cases to rebind. Some devices do not support
+      // certain use-cases (notably ImageAnalysis) when an extension is
+      // enabled; avoid rebinding unsupported use-cases to prevent IllegalArgumentException
+      // and preview freezes (see device logs).
+      final useCasesToBind = List<UseCase>.from(boundUseCases);
+      if (_activeEffect != null && imageAnalysis != null) {
+        useCasesToBind.remove(imageAnalysis);
+      }
+
+      // Unbind only the use cases we plan to rebind to reduce disruption.
+      await processCameraProvider!.unbind(useCasesToBind);
+
+      try {
+        camera = await processCameraProvider!.bindToLifecycle(
+          activeSelector,
+          useCasesToBind,
+        );
+      } on PlatformException catch (e) {
+        final msg = e.message?.toString();
+        // Some devices/platform implementations require all use cases to be
+        // unbound before binding with an extension-enabled selector. If we
+        // receive that specific error, unbind all and retry once.
+        if (msg != null && msg.contains('Please unbind first')) {
+          await processCameraProvider!.unbindAll();
+          camera = await processCameraProvider!.bindToLifecycle(
+            activeSelector,
+            useCasesToBind,
+          );
+        } else {
+          rethrow;
+        }
+      }
 
       if (camera != null && _flutterSurfaceTextureId >= 0) {
         await _updateCameraInfoAndLiveCameraState(_flutterSurfaceTextureId);

@@ -133,6 +133,11 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Camera example')),
+      floatingActionButton: FloatingActionButton(
+        tooltip: 'Effects',
+        onPressed: controller != null ? _showEffectsSheet : null,
+        child: const Icon(Icons.auto_awesome),
+      ),
       body: Column(
         children: <Widget>[
           Expanded(
@@ -163,6 +168,50 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _showEffectsSheet() async {
+    if (controller == null) {
+      return;
+    }
+    var states = <CameraEffectState>[];
+    try {
+      states = await controller!.getCameraEffects();
+    } on CameraException catch (e) {
+      _logError(e.code, e.description);
+      return;
+    }
+
+    if (!mounted) {
+      return;
+    }
+    await showModalBottomSheet<void>(
+      context: context,
+      builder: (BuildContext ctx) {
+        return ListView(
+          shrinkWrap: true,
+          children: states.map((CameraEffectState s) {
+            return ListTile(
+              title: Text(s.type.name),
+              subtitle: Text(s.isSupported ? 'Supported' : 'Unsupported'),
+              trailing: s.isSupported && !s.isSystemManaged
+                  ? Switch(
+                      value: s.isActive,
+                      onChanged: (bool v) async {
+                        Navigator.of(ctx).pop();
+                        try {
+                          await controller!.setCameraEffectActive(s.type, v);
+                        } on CameraException catch (e) {
+                          _logError(e.code, e.description);
+                        }
+                      },
+                    )
+                  : null,
+            );
+          }).toList(),
+        );
+      },
     );
   }
 
