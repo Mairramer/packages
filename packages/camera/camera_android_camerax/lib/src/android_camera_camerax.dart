@@ -1920,6 +1920,9 @@ class AndroidCameraCameraX extends CameraPlatform {
   // concurrent rebinds causing race conditions in CameraX.
   Future<void>? _rebindUseCasesSemaphore;
 
+  /// Tracks if ImageAnalysis was temporarily unbound to allow applying a camera effect.
+  bool _imageStreamPausedForEffect = false;
+
   /// Returns a [CameraSelector] with the active camera effect applied, if any.
   Future<CameraSelector> _getCameraSelectorWithActiveEffect() async {
     final CameraSelector baseSelector = cameraSelector!;
@@ -1949,18 +1952,15 @@ class AndroidCameraCameraX extends CameraPlatform {
       return;
     }
 
-    // If a rebind is already in progress, await it so callers serialize.
-    while (_rebindUseCasesSemaphore != null) {
-      try {
-        await _rebindUseCasesSemaphore;
-      } catch (_) {
-        // ignore errors from previous rebinds; continue to attempt current one
-      }
-    }
-
+    final Future<void>? previous = _rebindUseCasesSemaphore;
     final completer = Completer<void>();
     _rebindUseCasesSemaphore = completer.future;
+
     try {
+      if (previous != null) {
+        await previous.catchError((_) {});
+      }
+
       final boundUseCases = <UseCase>[];
       if (preview != null && await processCameraProvider!.isBound(preview!)) {
         boundUseCases.add(preview!);
@@ -1969,8 +1969,10 @@ class AndroidCameraCameraX extends CameraPlatform {
           await processCameraProvider!.isBound(imageCapture!)) {
         boundUseCases.add(imageCapture!);
       }
-      if (imageAnalysis != null &&
-          await processCameraProvider!.isBound(imageAnalysis!)) {
+      final bool analysisIsBound =
+          imageAnalysis != null &&
+          await processCameraProvider!.isBound(imageAnalysis!);
+      if (analysisIsBound || _imageStreamPausedForEffect) {
         boundUseCases.add(imageAnalysis!);
       }
       if (videoCapture != null &&
@@ -1994,8 +1996,11 @@ class AndroidCameraCameraX extends CameraPlatform {
       // enabled; avoid rebinding unsupported use-cases to prevent IllegalArgumentException
       // and preview freezes (see device logs).
       final useCasesToBind = List<UseCase>.from(boundUseCases);
-      if (_activeEffect != null && imageAnalysis != null) {
+      if (_activeEffect != null && boundUseCases.contains(imageAnalysis)) {
         useCasesToBind.remove(imageAnalysis);
+        _imageStreamPausedForEffect = true;
+      } else if (_activeEffect == null) {
+        _imageStreamPausedForEffect = false;
       }
 
       // Unbind only the use cases we plan to rebind to reduce disruption.
@@ -2007,6 +2012,8 @@ class AndroidCameraCameraX extends CameraPlatform {
           useCasesToBind,
         );
       } on PlatformException catch (e) {
+        // TODO(Mairramer): Improve this error handling.
+
         final msg = e.message?.toString();
         // Some devices/platform implementations require all use cases to be
         // unbound before binding with an extension-enabled selector. If we
@@ -2030,7 +2037,9 @@ class AndroidCameraCameraX extends CameraPlatform {
       if (!completer.isCompleted) {
         completer.complete();
       }
-      _rebindUseCasesSemaphore = null;
+      if (_rebindUseCasesSemaphore == completer.future) {
+        _rebindUseCasesSemaphore = null;
+      }
     }
   }
 

@@ -6734,7 +6734,9 @@ void main() {
           true,
         );
 
-        verify(mockProcessCameraProvider.unbindAll()).called(1);
+        verify(
+          mockProcessCameraProvider.unbind(<UseCase>[mockPreview]),
+        ).called(1);
         verify(
           mockProcessCameraProvider.bindToLifecycle(
             mockEnabledCameraSelector,
