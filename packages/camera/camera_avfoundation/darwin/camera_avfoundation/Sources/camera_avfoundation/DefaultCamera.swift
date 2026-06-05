@@ -81,7 +81,7 @@ final class DefaultCamera: NSObject, Camera {
   private var imageStreamHandler: ImageStreamHandler?
 
   private var previewSize: CGSize?
-  var deviceOrientation: UIDeviceOrientation {
+  var deviceOrientation: PlatformDeviceOrientation {
     didSet {
       guard deviceOrientation != oldValue else { return }
       updateOrientation()
@@ -121,7 +121,7 @@ final class DefaultCamera: NSObject, Camera {
   private var maxStreamingPendingFramesCount = 4
 
   private var fileFormat = PlatformImageFileFormat.jpeg
-  private var lockedCaptureOrientation = UIDeviceOrientation.unknown
+  private var lockedCaptureOrientation: PlatformDeviceOrientation?
   private var exposureMode = PlatformExposureMode.auto
   private var focusMode = PlatformFocusMode.auto
   private var flashMode: PlatformFlashMode
@@ -395,20 +395,22 @@ final class DefaultCamera: NSObject, Camera {
       // Setup the audio output.
       let audioOutput = AVCaptureAudioDataOutput()
 
-      let block = {
-        // Set up options implicit to AVAudioSessionCategoryPlayback to avoid conflicts with other
-        // plugins like video_player.
-        DefaultCamera.upgradeAudioSessionCategory(
-          requestedCategory: .playAndRecord,
-          options: [.defaultToSpeaker, .allowBluetoothA2DP, .allowAirPlay]
-        )
-      }
+      #if os(iOS)
+        let block = {
+          // Set up options implicit to AVAudioSessionCategoryPlayback to avoid conflicts with other
+          // plugins like video_player.
+          DefaultCamera.upgradeAudioSessionCategory(
+            requestedCategory: .playAndRecord,
+            options: [.defaultToSpeaker, .allowBluetoothA2DP, .allowAirPlay]
+          )
+        }
 
-      if !Thread.isMainThread {
-        DispatchQueue.main.sync(execute: block)
-      } else {
-        block()
-      }
+        if !Thread.isMainThread {
+          DispatchQueue.main.sync(execute: block)
+        } else {
+          block()
+        }
+      #endif
 
       if audioCaptureSession.canAddInput(audioInput) {
         audioCaptureSession.addInput(audioInput)
@@ -427,46 +429,48 @@ final class DefaultCamera: NSObject, Camera {
     }
   }
 
-  // This function, although slightly modified, is also in video_player_avfoundation (in ObjC).
-  // Both need to do the same thing and run on the same thread (for example main thread).
-  // Configure application wide audio session manually to prevent overwriting flag
-  // MixWithOthers by capture session.
-  // Only change category if it is considered an upgrade which means it can only enable
-  // ability to play in silent mode or ability to record audio but never disables it,
-  // that could affect other plugins which depend on this global state. Only change
-  // category or options if there is change to prevent unnecessary lags and silence.
-  private static func upgradeAudioSessionCategory(
-    requestedCategory: AVAudioSession.Category,
-    options: AVAudioSession.CategoryOptions
-  ) {
-    let playCategories: Set<AVAudioSession.Category> = [.playback, .playAndRecord]
-    let recordCategories: Set<AVAudioSession.Category> = [.record, .playAndRecord]
-    let requiredCategories: Set<AVAudioSession.Category> = [
-      requestedCategory, AVAudioSession.sharedInstance().category,
-    ]
+  #if os(iOS)
+    // This function, although slightly modified, is also in video_player_avfoundation (in ObjC).
+    // Both need to do the same thing and run on the same thread (for example main thread).
+    // Configure application wide audio session manually to prevent overwriting flag
+    // MixWithOthers by capture session.
+    // Only change category if it is considered an upgrade which means it can only enable
+    // ability to play in silent mode or ability to record audio but never disables it,
+    // that could affect other plugins which depend on this global state. Only change
+    // category or options if there is change to prevent unnecessary lags and silence.
+    private static func upgradeAudioSessionCategory(
+      requestedCategory: AVAudioSession.Category,
+      options: AVAudioSession.CategoryOptions
+    ) {
+      let playCategories: Set<AVAudioSession.Category> = [.playback, .playAndRecord]
+      let recordCategories: Set<AVAudioSession.Category> = [.record, .playAndRecord]
+      let requiredCategories: Set<AVAudioSession.Category> = [
+        requestedCategory, AVAudioSession.sharedInstance().category,
+      ]
 
-    let requiresPlay = !requiredCategories.isDisjoint(with: playCategories)
-    let requiresRecord = !requiredCategories.isDisjoint(with: recordCategories)
+      let requiresPlay = !requiredCategories.isDisjoint(with: playCategories)
+      let requiresRecord = !requiredCategories.isDisjoint(with: recordCategories)
 
-    var finalCategory = requestedCategory
-    if requiresPlay && requiresRecord {
-      finalCategory = .playAndRecord
-    } else if requiresPlay {
-      finalCategory = .playback
-    } else if requiresRecord {
-      finalCategory = .record
+      var finalCategory = requestedCategory
+      if requiresPlay && requiresRecord {
+        finalCategory = .playAndRecord
+      } else if requiresPlay {
+        finalCategory = .playback
+      } else if requiresRecord {
+        finalCategory = .record
+      }
+
+      let finalOptions = AVAudioSession.sharedInstance().categoryOptions.union(options)
+
+      if finalCategory == AVAudioSession.sharedInstance().category
+        && finalOptions == AVAudioSession.sharedInstance().categoryOptions
+      {
+        return
+      }
+
+      try? AVAudioSession.sharedInstance().setCategory(finalCategory, options: finalOptions)
     }
-
-    let finalOptions = AVAudioSession.sharedInstance().categoryOptions.union(options)
-
-    if finalCategory == AVAudioSession.sharedInstance().category
-      && finalOptions == AVAudioSession.sharedInstance().categoryOptions
-    {
-      return
-    }
-
-    try? AVAudioSession.sharedInstance().setCategory(finalCategory, options: finalOptions)
-  }
+  #endif
 
   func reportInitializationState() {
     // Get all the state on the current thread, not the main thread.
@@ -790,8 +794,8 @@ final class DefaultCamera: NSObject, Camera {
     guard !isRecording else { return }
 
     let orientation =
-      (lockedCaptureOrientation != .unknown)
-      ? lockedCaptureOrientation
+      (lockedCaptureOrientation != nil)
+      ? lockedCaptureOrientation!
       : deviceOrientation
 
     updateOrientation(orientation, forCaptureOutput: capturePhotoOutput)
@@ -799,7 +803,7 @@ final class DefaultCamera: NSObject, Camera {
   }
 
   private func updateOrientation(
-    _ orientation: UIDeviceOrientation, forCaptureOutput captureOutput: CaptureOutput
+    _ orientation: PlatformDeviceOrientation, forCaptureOutput captureOutput: CaptureOutput
   ) {
     if let connection = captureOutput.connection(with: .video),
       connection.isVideoOrientationSupported
@@ -808,33 +812,30 @@ final class DefaultCamera: NSObject, Camera {
     }
   }
 
-  private func videoOrientation(forDeviceOrientation deviceOrientation: UIDeviceOrientation)
+  private func videoOrientation(forDeviceOrientation deviceOrientation: PlatformDeviceOrientation)
     -> AVCaptureVideoOrientation
   {
     switch deviceOrientation {
-    case .portrait:
+    case .portraitUp:
       return .portrait
     case .landscapeLeft:
       return .landscapeRight
     case .landscapeRight:
       return .landscapeLeft
-    case .portraitUpsideDown:
+    case .portraitDown:
       return .portraitUpsideDown
-    default:
-      return .portrait
     }
   }
 
   func lockCaptureOrientation(_ pigeonOrientation: PlatformDeviceOrientation) {
-    let orientation = getUIDeviceOrientation(for: pigeonOrientation)
-    if lockedCaptureOrientation != orientation {
-      lockedCaptureOrientation = orientation
+    if lockedCaptureOrientation != pigeonOrientation {
+      lockedCaptureOrientation = pigeonOrientation
       updateOrientation()
     }
   }
 
   func unlockCaptureOrientation() {
-    lockedCaptureOrientation = .unknown
+    lockedCaptureOrientation = nil
     updateOrientation()
   }
 
@@ -884,7 +885,7 @@ final class DefaultCamera: NSObject, Camera {
       return
     }
 
-    let orientation = UIDevice.current.orientation
+    let orientation = deviceOrientationProvider.orientation
     try? captureDevice.lockForConfiguration()
     // A nil point resets to the center.
     let exposurePoint = cgPoint(
@@ -955,26 +956,23 @@ final class DefaultCamera: NSObject, Camera {
   }
 
   private func cgPoint(
-    for point: PlatformPoint, withOrientation orientation: UIDeviceOrientation
+    for point: PlatformPoint, withOrientation orientation: PlatformDeviceOrientation
   )
     -> CGPoint
   {
     var x = point.x
     var y = point.y
     switch orientation {
-    case .portrait:  // 90 ccw
+    case .portraitUp:  // 90 ccw
       y = 1 - point.x
       x = point.y
-    case .portraitUpsideDown:  // 90 cw
+    case .portraitDown:  // 90 cw
       x = 1 - point.y
       y = point.x
     case .landscapeRight:  // 180
       x = 1 - point.x
       y = 1 - point.y
     case .landscapeLeft:
-      // No rotation required
-      break
-    default:
       // No rotation required
       break
     }

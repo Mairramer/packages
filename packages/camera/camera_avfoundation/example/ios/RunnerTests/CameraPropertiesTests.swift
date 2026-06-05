@@ -36,22 +36,6 @@ final class CameraPropertiesTests: XCTestCase {
 
   // MARK: - Device Orientation Tests
 
-  func testGetUIDeviceOrientationForPigeonDeviceOrientation() {
-    XCTAssertEqual(
-      UIDeviceOrientation.portraitUpsideDown,
-      getUIDeviceOrientation(for: .portraitDown)
-    )
-    XCTAssertEqual(
-      UIDeviceOrientation.landscapeLeft,
-      getUIDeviceOrientation(for: .landscapeLeft))
-    XCTAssertEqual(
-      UIDeviceOrientation.landscapeRight,
-      getUIDeviceOrientation(for: .landscapeRight))
-    XCTAssertEqual(
-      UIDeviceOrientation.portrait,
-      getUIDeviceOrientation(for: .portraitUp))
-  }
-
   func testGetPigeonDeviceOrientationForUIDeviceOrientation() {
     XCTAssertEqual(
       PlatformDeviceOrientation.portraitDown,

@@ -7,9 +7,9 @@ import UIKit
 @testable import camera_avfoundation
 
 final class MockDeviceOrientationProvider: NSObject, DeviceOrientationProvider {
-  var orientationStub: (() -> UIDeviceOrientation)?
+  var orientationStub: (() -> PlatformDeviceOrientation)?
 
-  var orientation: UIDeviceOrientation {
-    return orientationStub?() ?? .unknown
+  var orientation: PlatformDeviceOrientation {
+    return orientationStub?() ?? .portraitUp
   }
 }

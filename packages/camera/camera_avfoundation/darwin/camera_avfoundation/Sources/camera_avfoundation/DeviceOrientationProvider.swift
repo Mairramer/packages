@@ -2,19 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import UIKit
+#if os(iOS)
+  import UIKit
+#endif
 
 /// A protocol which provides the current device orientation.
 /// It exists to allow replacing UIDevice in tests.
 protocol DeviceOrientationProvider {
   /// Returns the physical orientation of the device.
-  var orientation: UIDeviceOrientation { get }
+  var orientation: PlatformDeviceOrientation { get }
 }
 
 /// A default implementation of DeviceOrientationProvider which uses orientation
 /// of the current device from UIDevice.
-@objc public class DefaultDeviceOrientationProvider: NSObject, DeviceOrientationProvider {
-  @objc public var orientation: UIDeviceOrientation {
-    return UIDevice.current.orientation
+class DefaultDeviceOrientationProvider: NSObject, DeviceOrientationProvider {
+  var orientation: PlatformDeviceOrientation {
+    #if os(iOS)
+      return getPigeonDeviceOrientation(for: UIDevice.current.orientation)
+    #else
+      return .portraitUp
+    #endif
   }
 }

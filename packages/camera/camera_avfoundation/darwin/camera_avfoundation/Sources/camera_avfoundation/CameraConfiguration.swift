@@ -4,7 +4,10 @@
 
 import AVFoundation
 import CoreMedia
-import UIKit
+
+#if os(iOS)
+  import UIKit
+#endif
 
 /// Factory block returning an FLTCaptureDevice.
 /// Used in tests to inject a video capture device into DefaultCamera.
@@ -36,7 +39,7 @@ class CameraConfiguration {
   var videoDimensionsConverter: VideoDimensionsConverter
   var deviceOrientationProvider: DeviceOrientationProvider
   let initialCameraName: String
-  var orientation: UIDeviceOrientation
+  var orientation: PlatformDeviceOrientation
 
   init(
     mediaSettings: PlatformMediaSettings,
@@ -57,7 +60,11 @@ class CameraConfiguration {
     self.audioCaptureSession = captureSessionFactory()
     self.captureDeviceInputFactory = captureDeviceInputFactory
     self.initialCameraName = initialCameraName
-    self.orientation = UIDevice.current.orientation
+    #if os(iOS)
+      self.orientation = getPigeonDeviceOrientation(for: UIDevice.current.orientation)
+    #else
+      self.orientation = .portraitUp
+    #endif
     self.deviceOrientationProvider = DefaultDeviceOrientationProvider()
 
     self.videoDimensionsConverter = { format in
