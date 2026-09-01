@@ -95,6 +95,11 @@ abstract class MaterialInkController {
   /// The ink feature will paint as part of this controller.
   void addInkFeature(InkFeature feature);
 
+  /// Remove an [InkFeature].
+  ///
+  /// The ink feature will no longer paint as part of this controller.
+  void removeInkFeature(InkFeature feature);
+
   /// Notifies the controller that one of its ink features needs to repaint.
   void markNeedsPaint();
 }
@@ -597,7 +602,8 @@ class _RenderInkFeatures extends RenderProxyBox implements MaterialInkController
     markNeedsPaint();
   }
 
-  void _removeFeature(InkFeature feature) {
+  @override
+  void removeInkFeature(InkFeature feature) {
     assert(_inkFeatures != null);
     _inkFeatures!.remove(feature);
     markNeedsPaint();
@@ -621,7 +627,10 @@ class _RenderInkFeatures extends RenderProxyBox implements MaterialInkController
       canvas.translate(offset.dx, offset.dy);
       canvas.clipRect(Offset.zero & size);
       for (final InkFeature inkFeature in inkFeatures) {
-        inkFeature._paint(canvas);
+        final Matrix4? transform = InkFeature._getPaintTransform(this, inkFeature.referenceBox);
+        if (transform != null) {
+          inkFeature.paintFeature(canvas, transform);
+        }
       }
       canvas.restore();
     }
@@ -669,11 +678,7 @@ class _InkFeatures extends SingleChildRenderObjectWidget {
 /// [MaterialInkController.addInkFeature].
 abstract class InkFeature {
   /// Initializes fields for subclasses.
-  InkFeature({
-    required MaterialInkController controller,
-    required this.referenceBox,
-    this.onRemoved,
-  }) : _controller = controller as _RenderInkFeatures {
+  InkFeature({required this._controller, required this.referenceBox, this.onRemoved}) {
     assert(debugMaybeDispatchCreated('material', 'InkFeature', this));
   }
 
@@ -682,7 +687,7 @@ abstract class InkFeature {
   /// Typically used by subclasses to call
   /// [MaterialInkController.markNeedsPaint] when they need to repaint.
   MaterialInkController get controller => _controller;
-  final _RenderInkFeatures _controller;
+  final MaterialInkController _controller;
 
   /// The render box whose visual position defines the frame of reference for this ink feature.
   final RenderBox referenceBox;
@@ -701,7 +706,7 @@ abstract class InkFeature {
       return true;
     }());
     assert(debugMaybeDispatchDisposed(this));
-    _controller._removeFeature(this);
+    _controller.removeInkFeature(this);
     onRemoved?.call();
   }
 
@@ -757,16 +762,6 @@ abstract class InkFeature {
 
     final double det = inverseTransform.invert();
     return det != 0 ? (inverseTransform..multiply(transform)) : null;
-  }
-
-  void _paint(Canvas canvas) {
-    assert(referenceBox.attached);
-    assert(!_debugDisposed);
-    // determine the transform that gets our coordinate system to be like theirs
-    final Matrix4? transform = _getPaintTransform(_controller, referenceBox);
-    if (transform != null) {
-      paintFeature(canvas, transform);
-    }
   }
 
   /// Override this method to paint the ink feature.

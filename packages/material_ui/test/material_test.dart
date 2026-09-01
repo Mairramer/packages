@@ -1269,6 +1269,23 @@ void main() {
     );
     expect(tester.getSize(find.byType(Material)), Size.zero);
   });
+
+  testWidgets('InkFeature can be disposed when using a custom MaterialInkController', (
+    WidgetTester tester,
+  ) async {
+    final controller = _CustomInkController();
+    final RenderBox referenceBox = RenderConstrainedBox(
+      additionalConstraints: const BoxConstraints(),
+    );
+    final feature = _InkFeature(controller: controller, referenceBox: referenceBox);
+
+    expect(controller.addCount, 1);
+    expect(controller.removeCount, 0);
+
+    feature.dispose();
+
+    expect(controller.removeCount, 1);
+  });
 }
 
 class TrackPaintInkFeature extends InkFeature {
@@ -1288,4 +1305,28 @@ class _InkFeature extends InkFeature {
 
   @override
   void paintFeature(Canvas canvas, Matrix4 transform) {}
+}
+
+class _CustomInkController implements MaterialInkController {
+  @override
+  Color? color;
+
+  @override
+  TickerProvider get vsync => throw UnimplementedError();
+
+  int addCount = 0;
+  int removeCount = 0;
+
+  @override
+  void addInkFeature(InkFeature feature) {
+    addCount++;
+  }
+
+  @override
+  void removeInkFeature(InkFeature feature) {
+    removeCount++;
+  }
+
+  @override
+  void markNeedsPaint() {}
 }
