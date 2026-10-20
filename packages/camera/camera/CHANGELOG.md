@@ -1,5 +1,7 @@
-## NEXT
+## 0.12.1+1
 
+* Updates `camera_avfoundation` constraint to `^0.11.0`.
+* Updates `camera_platform_interface` constraint to `^2.14.0`.
 * Updates minimum supported SDK version to Flutter 3.41/Dart 3.11.
 
 ## 0.12.1
