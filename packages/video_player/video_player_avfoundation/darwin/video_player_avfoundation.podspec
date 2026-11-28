@@ -14,14 +14,11 @@ Downloaded by pub (not CocoaPods).
   s.author           = { 'Flutter Dev Team' => 'flutter-dev@googlegroups.com' }
   s.source           = { :http => 'https://github.com/flutter/packages/tree/main/packages/video_player/video_player_avfoundation' }
   s.documentation_url = 'https://pub.dev/packages/video_player'
-  s.source_files = 'video_player_avfoundation/Sources/video_player_avfoundation{,_objc}/**/*.{h,m,swift}'
-  s.ios.source_files = 'video_player_avfoundation/Sources/video_player_avfoundation_ios/*'
-  s.osx.source_files = 'video_player_avfoundation/Sources/video_player_avfoundation_macos/*'
-  s.public_header_files = 'video_player_avfoundation/Sources/video_player_avfoundation_objc/include/**/*.h'
+  s.source_files = 'video_player_avfoundation/Sources/video_player_avfoundation/**/*.swift'
   s.ios.dependency 'Flutter'
   s.osx.dependency 'FlutterMacOS'
-  s.ios.deployment_target = '13.0'
-  s.osx.deployment_target = '10.15'
+  s.ios.deployment_target = '15.0'
+  s.osx.deployment_target = '12.0'
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
   s.swift_version = '5.0'
   s.xcconfig = {

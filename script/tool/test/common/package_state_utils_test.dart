@@ -57,6 +57,7 @@ void main() {
         'packages/a_plugin/CHANGELOG.md',
         // Dev-facing docs.
         'packages/a_plugin/CONTRIBUTING.md',
+        'packages/a_plugin/AGENTS.md',
         // Analysis.
         'packages/a_plugin/example/android/lint-baseline.xml',
         // Tests.
@@ -72,6 +73,9 @@ void main() {
         'packages/a_plugin/tool/a_development_tool.dart',
         // Example build files.
         'packages/a_plugin/example/android/build.gradle',
+        'packages/a_plugin/example/android/app/build.gradle.kts',
+        'packages/a_plugin/example/android/settings.gradle',
+        'packages/a_plugin/example/android/settings.gradle.kts',
         'packages/a_plugin/example/android/gradle/wrapper/gradle-wrapper.properties',
         'packages/a_plugin/example/ios/Runner.xcodeproj/project.pbxproj',
         'packages/a_plugin/example/ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme',
@@ -121,6 +125,38 @@ void main() {
       final RepositoryPackage package = createFakePlugin('a_plugin', packagesDir);
 
       const changedFiles = <String>['packages/a_plugin/evals/foo.dart'];
+
+      final PackageChangeState state = await checkPackageChangeState(
+        package,
+        changedPaths: changedFiles,
+        relativePackagePath: 'packages/a_plugin/',
+      );
+
+      expect(state.hasChanges, true);
+      expect(state.needsVersionChange, false);
+      expect(state.needsChangelogChange, false);
+    });
+
+    test('does not require version or changelog change for test_apps changes', () async {
+      final RepositoryPackage package = createFakePlugin('a_plugin', packagesDir);
+
+      const changedFiles = <String>['packages/a_plugin/test_apps/a_test_app/lib/main.dart'];
+
+      final PackageChangeState state = await checkPackageChangeState(
+        package,
+        changedPaths: changedFiles,
+        relativePackagePath: 'packages/a_plugin/',
+      );
+
+      expect(state.hasChanges, true);
+      expect(state.needsVersionChange, false);
+      expect(state.needsChangelogChange, false);
+    });
+
+    test('does not require version or changelog change for AGENTS.md changes', () async {
+      final RepositoryPackage package = createFakePlugin('a_plugin', packagesDir);
+
+      const changedFiles = <String>['packages/a_plugin/AGENTS.md'];
 
       final PackageChangeState state = await checkPackageChangeState(
         package,
@@ -344,6 +380,59 @@ void main() {
       expect(state.hasChanges, true);
       expect(state.needsVersionChange, false);
       expect(state.needsChangelogChange, false);
+    });
+
+    test('does not require changelog or version change for build.gradle.kts '
+        'test-dependency-only changes', () async {
+      final RepositoryPackage package = createFakePlugin('a_plugin', packagesDir);
+
+      const changedFiles = <String>['packages/a_plugin/android/build.gradle.kts'];
+
+      final GitVersionFinder git = FakeGitVersionFinder(<String, List<String>>{
+        'packages/a_plugin/android/build.gradle.kts': <String>[
+          '-    testImplementation("org.mockito:mockito-core:5.23.0")',
+          '+    testImplementation("org.mockito:mockito-core:5.24.0")',
+          '-    androidTestImplementation("androidx.test.espresso:espresso-core:3.2.0")',
+          '+    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")',
+        ],
+      });
+
+      final PackageChangeState state = await checkPackageChangeState(
+        package,
+        changedPaths: changedFiles,
+        relativePackagePath: 'packages/a_plugin/',
+        git: git,
+      );
+
+      expect(state.hasChanges, true);
+      expect(state.needsVersionChange, false);
+      expect(state.needsChangelogChange, false);
+    });
+
+    test('requires changelog or version change for other build.gradle.kts changes', () async {
+      final RepositoryPackage package = createFakePlugin('a_plugin', packagesDir);
+
+      const changedFiles = <String>['packages/a_plugin/android/build.gradle.kts'];
+
+      final GitVersionFinder git = FakeGitVersionFinder(<String, List<String>>{
+        'packages/a_plugin/android/build.gradle.kts': <String>[
+          '-    testImplementation("org.mockito:mockito-core:5.23.0")',
+          '+    testImplementation("org.mockito:mockito-core:5.24.0")',
+          '-    implementation("com.google.android.gms:play-services-maps:18.0.0")',
+          '+    implementation("com.google.android.gms:play-services-maps:18.0.2")',
+        ],
+      });
+
+      final PackageChangeState state = await checkPackageChangeState(
+        package,
+        changedPaths: changedFiles,
+        relativePackagePath: 'packages/a_plugin/',
+        git: git,
+      );
+
+      expect(state.hasChanges, true);
+      expect(state.needsVersionChange, true);
+      expect(state.needsChangelogChange, true);
     });
 
     test(

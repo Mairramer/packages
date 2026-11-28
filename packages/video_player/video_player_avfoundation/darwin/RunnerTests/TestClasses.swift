@@ -4,7 +4,6 @@
 
 import AVFoundation
 import Testing
-import video_player_avfoundation_objc
 
 @testable import video_player_avfoundation
 
@@ -37,47 +36,45 @@ import video_player_avfoundation_objc
   }
 }
 
-final class TestAsset: NSObject, FVPAVAsset {
-  let duration: CMTime
-  let tracks: [AVAssetTrack]?
+final class TestAsset: WrappedAVAsset {
+  private let duration: CMTime
+  private let tracks: [AVAssetTrack]
+  var continuation: CheckedContinuation<Void, Never>?
 
-  var loadedTracksAsynchronously = false
+  var loadedValue = false
 
-  init(duration: CMTime = CMTime.zero, tracks: [AVAssetTrack]? = nil) {
+  init(
+    duration: CMTime = CMTime.zero,
+    tracks: [AVAssetTrack] = [],
+    continuation: CheckedContinuation<Void, Never>? = nil
+  ) {
     self.duration = duration
     self.tracks = tracks
-    super.init()
+    self.continuation = continuation
   }
 
-  func statusOfValue(forKey key: String, error outError: NSErrorPointer) -> AVKeyValueStatus {
-    return tracks == nil ? .loading : .loaded
-  }
-
-  func loadValuesAsynchronously(forKeys keys: [String], completionHandler handler: (() -> Void)?) {
-    handler?()
-  }
-
-  @available(macOS 12.0, iOS 15.0, *)
-  func loadTracks(
-    withMediaType mediaType: AVMediaType,
-    completionHandler: @escaping ([AVAssetTrack]?, Error?) -> Void
-  ) {
-    loadedTracksAsynchronously = true
-    completionHandler(tracks, nil)
-  }
-
-  func tracks(withMediaType mediaType: AVMediaType) -> [AVAssetTrack] {
-    return tracks ?? []
+  func load<T>(_ property: AVAsyncProperty<AVAsset, T>, isolation: isolated (any Actor)?)
+    async throws -> T
+  {
+    loadedValue = true
+    continuation?.resume()
+    continuation = nil
+    if let tracks = tracks as? T {
+      return tracks
+    }
+    if let duration = duration as? T {
+      return duration
+    }
+    fatalError("Unimplemented property in stub")
   }
 }
 
-final class StubPlayerItem: NSObject, FVPAVPlayerItem {
-  let asset: FVPAVAsset
+final class StubPlayerItem: WrappedAVPlayerItem {
+  let asset: WrappedAVAsset
   var videoComposition: AVVideoComposition?
 
-  init(asset: FVPAVAsset = TestAsset()) {
+  init(asset: WrappedAVAsset = TestAsset()) {
     self.asset = asset
-    super.init()
   }
 }
 
@@ -122,23 +119,21 @@ final class TestTextureRegistry: NSObject, FlutterTextureRegistry {
   }
 }
 
-final class StubViewProvider: NSObject, FVPViewProvider {
+final class StubViewProvider: ViewProvider {
   #if os(iOS)
     var viewController: UIViewController?
     init(viewController: UIViewController? = nil) {
       self.viewController = viewController
-      super.init()
     }
   #else
     var view: NSView?
     init(view: NSView? = nil) {
       self.view = view
-      super.init()
     }
   #endif
 }
 
-final class StubAssetProvider: NSObject, FVPAssetProvider {
+final class StubAssetProvider: AssetProvider {
   func lookupKey(forAsset asset: String) -> String? {
     return asset
   }
@@ -148,16 +143,15 @@ final class StubAssetProvider: NSObject, FVPAssetProvider {
   }
 }
 
-final class TestPixelBufferSource: NSObject, FVPPixelBufferSource {
+final class TestPixelBufferSource: PixelBufferSource {
   var pixelBuffer: CVPixelBuffer?
   let videoOutput: AVPlayerItemVideoOutput
 
-  override init() {
+  init() {
     videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: [
       kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
       kCVPixelBufferIOSurfacePropertiesKey as String: [:] as [String: String],
     ])
-    super.init()
   }
 
   func itemTime(forHostTime hostTimeInSeconds: CFTimeInterval) -> CMTime {
@@ -180,14 +174,14 @@ final class TestPixelBufferSource: NSObject, FVPPixelBufferSource {
 }
 
 #if os(iOS)
-  final class TestAudioSession: NSObject, FVPAVAudioSession {
+  final class TestAudioSession: WrappedAVAudioSession {
     var category: AVAudioSession.Category = .ambient
     var categoryOptions: AVAudioSession.CategoryOptions = []
     private(set) var setCategoryCalled = false
 
     func setCategory(
       _ category: AVAudioSession.Category,
-      with options: AVAudioSession.CategoryOptions
+      options: AVAudioSession.CategoryOptions
     ) throws {
       setCategoryCalled = true
       self.category = category
@@ -196,84 +190,83 @@ final class TestPixelBufferSource: NSObject, FVPPixelBufferSource {
   }
 #endif
 
-final class StubFVPAVFactory: NSObject, FVPAVFactory {
+final class StubAVFactory: WrappedAVObjectFactory {
   let player: AVPlayer
-  let playerItem: FVPAVPlayerItem
-  let pixelBufferSource: FVPPixelBufferSource?
+  let playerItem: WrappedAVPlayerItem
+  let pixelBufferSource: PixelBufferSource?
   private(set) var lastOutputSettings: [String: Any]?
   #if os(iOS)
-    var audioSession: FVPAVAudioSession
+    var audioSession: WrappedAVAudioSession
   #endif
 
   init(
     player: AVPlayer? = nil,
-    playerItem: FVPAVPlayerItem? = nil,
-    pixelBufferSource: FVPPixelBufferSource? = nil
+    playerItem: WrappedAVPlayerItem? = nil,
+    pixelBufferSource: PixelBufferSource? = nil,
+    assetURL: String? = nil,
   ) {
-    let dummyURL = URL(string: "https://flutter.dev")!
+    let url = URL(string: assetURL ?? "https://flutter.dev")!
     self.player =
       player
-      ?? AVPlayer(playerItem: AVPlayerItem(url: dummyURL))
+      ?? AVPlayer(playerItem: AVPlayerItem(url: url))
     self.playerItem = playerItem ?? StubPlayerItem()
     self.pixelBufferSource = pixelBufferSource
     #if os(iOS)
       self.audioSession = TestAudioSession()
     #endif
-    super.init()
   }
 
-  func urlAsset(with url: URL, options: [String: Any]?) -> FVPAVAsset {
+  func urlAsset(with url: URL, options: [String: Any]?) -> WrappedAVAsset {
     return playerItem.asset
   }
 
-  func playerItem(with asset: FVPAVAsset) -> FVPAVPlayerItem {
+  func playerItem(with asset: WrappedAVAsset) -> WrappedAVPlayerItem {
     return playerItem
   }
 
-  func player(with playerItem: FVPAVPlayerItem) -> AVPlayer {
+  func player(with playerItem: WrappedAVPlayerItem) -> AVPlayer {
     return self.player
   }
 
-  func videoOutput(outputSettings: [String: Any]) -> FVPPixelBufferSource {
+  func videoOutput(outputSettings: [String: Any]) -> PixelBufferSource {
     lastOutputSettings = outputSettings
     return pixelBufferSource ?? TestPixelBufferSource()
   }
 
   #if os(iOS)
-    func sharedAudioSession() -> FVPAVAudioSession {
+    func sharedAudioSession() -> WrappedAVAudioSession {
       return audioSession
     }
   #endif
 }
 
-final class StubFVPDisplayLink: NSObject, FVPDisplayLink {
+final class StubDisplayLink: DisplayLink {
   var running: Bool = false
   var duration: CFTimeInterval {
     return 1.0 / 60.0
   }
 }
 
-final class StubFVPDisplayLinkFactory: DisplayLinkFactory {
-  let displayLink = StubFVPDisplayLink()
+final class StubDisplayLinkFactory: DisplayLinkFactory {
+  let displayLink = StubDisplayLink()
   var fireDisplayLink: (() -> Void)?
 
   func displayLink(
-    with viewProvider: FVPViewProvider,
+    with viewProvider: ViewProvider,
     callback: @escaping () -> Void
-  ) -> FVPDisplayLink {
+  ) -> DisplayLink {
     fireDisplayLink = callback
     return displayLink
   }
 }
 
-final class StubEventListener: NSObject, FVPVideoEventListener {
+@MainActor final class StubEventListener: VideoEventListener {
   var onInitialized: (() -> Void)?
   private(set) var initializationDuration: Int64 = 0
   private(set) var initializationSize: CGSize = .zero
 
   init(onInitialized: (() -> Void)? = nil) {
     self.onInitialized = onInitialized
-    super.init()
   }
 
   func videoPlayerDidComplete() {}
@@ -286,7 +279,7 @@ final class StubEventListener: NSObject, FVPVideoEventListener {
   }
   func videoPlayerDidSetPlaying(_ playing: Bool) {}
   func videoPlayerDidStartBuffering() {}
-  func videoPlayerDidUpdateBufferRegions(_ regions: [[NSNumber]]!) {}
+  func videoPlayerDidUpdateBufferRegions(_ regions: [PlatformDurationRange]) {}
   func videoPlayerWasDisposed() {}
 }
 

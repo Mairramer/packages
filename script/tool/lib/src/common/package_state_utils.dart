@@ -135,7 +135,9 @@ bool _isTestChange(List<String> pathComponents) {
       pathComponents.contains('Tests') ||
       pathComponents.last == 'dart_test.yaml' ||
       // Pigeon's custom platform tests.
-      pathComponents.first == 'platform_tests';
+      pathComponents.first == 'platform_tests' ||
+      // Standalone test apps within a package (e.g., material_ui/test_apps/).
+      pathComponents.first == 'test_apps';
 }
 
 // True if the given file is an example file other than the one that will be
@@ -206,6 +208,8 @@ Future<bool> _isDevChange(
       pathComponents.first == 'run_tests.sh' ||
       // CONTRIBUTING.md is dev-facing.
       pathComponents.last == 'CONTRIBUTING.md' ||
+      // AGENTS.md is dev/agent-facing.
+      pathComponents.last == 'AGENTS.md' ||
       // The top-level "pending_changelogs" directory is the repo convention for storing
       // pending changelog files.
       pathComponents.first == 'pending_changelogs' ||
@@ -232,6 +236,7 @@ bool _isExampleBuildFile(List<String> pathComponents) {
   return pathComponents.contains('gradle-wrapper.properties') ||
       pathComponents.contains('gradle.properties') ||
       pathComponents.contains('build.gradle') ||
+      pathComponents.contains('build.gradle.kts') ||
       pathComponents.contains('Runner.xcodeproj') ||
       pathComponents.contains('Runner.xcscheme') ||
       pathComponents.contains('Runner.xcworkspace') ||
@@ -239,6 +244,7 @@ bool _isExampleBuildFile(List<String> pathComponents) {
       pathComponents.contains('CMakeLists.txt') ||
       pathComponents.contains('.pluginToolsConfig.yaml') ||
       pathComponents.contains('settings.gradle') ||
+      pathComponents.contains('settings.gradle.kts') ||
       pathComponents.contains('pubspec.yaml');
 }
 
@@ -250,7 +256,7 @@ Future<bool> _isGradleTestDependencyChange(
   if (git == null) {
     return false;
   }
-  if (pathComponents.last != 'build.gradle') {
+  if (pathComponents.last != 'build.gradle' && pathComponents.last != 'build.gradle.kts') {
     return false;
   }
   final List<String> diff = await git.getDiffContents(targetPath: repoPath);

@@ -12,21 +12,17 @@ import Foundation
   #error("Unsupported platform.")
 #endif
 
-#if canImport(video_player_avfoundation_objc)
-  import video_player_avfoundation_objc
-#endif
-
 /// A factory class responsible for creating native video views that can be embedded in a
 /// Flutter app.
 final class NativeVideoViewFactory: NSObject, FlutterPlatformViewFactory {
   private let messenger: FlutterBinaryMessenger
-  private let playerByIdentifierProvider: (Int64) -> FVPVideoPlayer?
+  private let playerByIdentifierProvider: (Int64) -> VideoPlayer?
 
   /// Initializes a new instance of NativeVideoViewFactory with the given messenger and
   /// a block that provides video players associated with their identifiers.
   init(
     messenger: FlutterBinaryMessenger,
-    playerByIdentifierProvider: @escaping (Int64) -> FVPVideoPlayer?
+    playerByIdentifierProvider: @escaping (Int64) -> VideoPlayer?
   ) {
     self.messenger = messenger
     self.playerByIdentifierProvider = playerByIdentifierProvider
@@ -50,17 +46,24 @@ final class NativeVideoViewFactory: NSObject, FlutterPlatformViewFactory {
     }
   #endif
 
-  func createArgsCodec() -> FlutterMessageCodec & NSObjectProtocol {
-    return VideoPlayerPluginMessagesPigeonCodec.shared
-  }
+  // createArgsCodec's return value has different optionality on macOS vs iOS.
+  #if os(macOS)
+    func createArgsCodec() -> (FlutterMessageCodec & NSObjectProtocol)? {
+      return MessagesPigeonCodec.shared
+    }
+  #else
+    func createArgsCodec() -> FlutterMessageCodec & NSObjectProtocol {
+      return MessagesPigeonCodec.shared
+    }
+  #endif
 
   /// Creates a native video view for the given arguments.
   private func createNativeVideoView(
     arguments args: PlatformVideoViewCreationParams
-  ) -> FVPNativeVideoView {
-    // The Dart code should never attempt to create a platform view for a player that doesn't exist,
-    // and there's no mechanism to report an error, so just force-unwrap.
-    let player = playerByIdentifierProvider(args.playerId)!
-    return FVPNativeVideoView(player: player.player)
+  ) -> NativeVideoView {
+    // Ignore null, since that indicates the player was disposed before
+    // reaching this part of the bringup.
+    let player = playerByIdentifierProvider(args.playerId)
+    return NativeVideoView(player: player?.player)
   }
 }
